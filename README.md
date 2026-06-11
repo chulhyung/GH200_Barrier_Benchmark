@@ -293,7 +293,7 @@ at the dramatic endpoints (uncontended = Δ/iteration at N=64; contended = Δ/op
 | `swp` | 13.28 → 150.03 cyc (4.126 → 46.584 ns) | **13.47 → 153.56 cyc (4.186 → 47.656 ns)** | ordered ≈ baseline at every T | PASS ✓ |
 | `cas` | 20.00 → 512.70 cyc (6.210 → 159.070 ns) | **20.00 → 512.67 cyc (6.210 → 159.070 ns)** | ordered ≈ baseline at every T | PASS ✓ |
 
-**The ordering suffix is ≈0 everywhere — even on a contended RMW**: an LSE RMW already owns the
+The ordering suffix is ≈0 everywhere — even on a contended RMW**: an LSE RMW already owns the
 line, so it has already serialized; what contention scales is the **relaxed RMW itself** (base
 column). Per paper §4.4 an atomic's *directional* ordering cost follows the store-release /
 load-acquire rules — measured in **Group 1** / **Group 3**, not re-measured here.
