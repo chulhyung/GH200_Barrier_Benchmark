@@ -1,0 +1,26 @@
+### perf_event_paranoid
+2
+
+### basic perf stat (own process) ?
+WARNING: perf not found for kernel 6.8.0-1051
+
+  You may need to install the following packages for this specific kernel:
+    linux-tools-6.8.0-1051-nvidia-64k
+    linux-cloud-tools-6.8.0-1051-nvidia-64k
+
+  You may also want to install one of the following packages to keep up to date:
+    linux-tools-nvidia-64k
+    linux-cloud-tools-nvidia-64k
+BASIC PERF FAILED
+
+### cache-miss related events available? (test each)
+  [YES] l1d_cache
+  [YES] l1d_cache_refill
+  [YES] l2d_cache
+  [YES] l2d_cache_refill
+  [YES] ll_cache_miss_rd
+  [YES] mem_access
+  [YES] cache-misses
+  [YES] cache-references
+  [YES] L1-dcache-load-misses
+  [YES] LLC-load-misses

@@ -1,0 +1,12 @@
+### gcc
+gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+### clang
+scripts/collect_env.sh: line 91: clang: command not found
+no clang
+### gcc -march=native -dM probe (cpu tuning)
+#define __ARM_FEATURE_ATOMICS 1
+#define __ARM_FEATURE_RCPC 1
+#define __ARM_ARCH_PROFILE 65
+#define __ARM_ARCH 8
+#define __ARM_ARCH_8A 1
+#define __ARM_ARCH_ISA_A64 1

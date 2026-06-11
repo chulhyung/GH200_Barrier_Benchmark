@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1072" height="420" viewBox="0 0 1072 420" font-family="sans-serif">
+<rect width="1072" height="420" fill="white"/>
+<text x="536" y="20" text-anchor="middle" font-size="15" font-weight="bold">At a glance — baseline vs memory-ordered (worst) at N=64</text>
+<rect x="371" y="32" width="12" height="12" fill="#ffffff" stroke="black" stroke-width="0.8"/>
+<text x="387" y="42" font-size="11">baseline miss</text>
+<rect x="491" y="32" width="12" height="12" fill="#3f3f3f" stroke="black" stroke-width="0.8"/>
+<text x="507" y="42" font-size="11">memory-ordered miss</text>
+<rect x="611" y="32" width="12" height="12" fill="#e8e8e8" stroke="black" stroke-width="0.8"/>
+<text x="627" y="42" font-size="11">baseline hit</text>
+<rect x="731" y="32" width="12" height="12" fill="#7f7f7f" stroke="black" stroke-width="0.8"/>
+<text x="747" y="42" font-size="11">memory-ordered hit</text>
+<line x1="58" y1="60" x2="58" y2="366" stroke="black" stroke-width="1.4"/>
+<line x1="58" y1="366" x2="518" y2="366" stroke="black" stroke-width="1.4"/>
+<text x="15" y="216" font-size="12" text-anchor="middle" transform="rotate(-90 15 216)">cycles / iteration</text>
+<text x="288" y="408" font-size="12" text-anchor="middle">op</text>
+<rect x="77.9" y="140.4" width="25.0" height="225.6" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="92.9" y="136.4" font-size="7.5" text-anchor="start" transform="rotate(-90 92.9 136.4)">3607</text>
+<rect x="106.3" y="140.4" width="25.0" height="225.6" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="121.3" y="136.4" font-size="7.5" text-anchor="start" transform="rotate(-90 121.3 136.4)">3606</text>
+<rect x="134.7" y="309.4" width="25.0" height="56.6" fill="#e8e8e8" stroke="black" stroke-width="0.7"/>
+<text x="149.6" y="305.4" font-size="7.5" text-anchor="start" transform="rotate(-90 149.6 305.4)">905</text>
+<rect x="163.0" y="310.1" width="25.0" height="55.9" fill="#7f7f7f" stroke="black" stroke-width="0.7"/>
+<text x="178.0" y="306.1" font-size="7.5" text-anchor="start" transform="rotate(-90 178.0 306.1)">894</text>
+<text x="134.7" y="382" font-size="11" text-anchor="middle">ldadd</text>
+<rect x="231.3" y="140.4" width="25.0" height="225.6" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="246.2" y="136.4" font-size="7.5" text-anchor="start" transform="rotate(-90 246.2 136.4)">3607</text>
+<rect x="259.6" y="120.1" width="25.0" height="245.9" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="274.6" y="116.1" font-size="7.5" text-anchor="start" transform="rotate(-90 274.6 116.1)">3931</text>
+<rect x="288.0" y="309.4" width="25.0" height="56.6" fill="#e8e8e8" stroke="black" stroke-width="0.7"/>
+<text x="303.0" y="305.4" font-size="7.5" text-anchor="start" transform="rotate(-90 303.0 305.4)">905</text>
+<rect x="316.4" y="309.4" width="25.0" height="56.6" fill="#7f7f7f" stroke="black" stroke-width="0.7"/>
+<text x="331.3" y="305.4" font-size="7.5" text-anchor="start" transform="rotate(-90 331.3 305.4)">905</text>
+<text x="288.0" y="382" font-size="11" text-anchor="middle">swp</text>
+<rect x="384.6" y="140.4" width="25.0" height="225.6" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="399.6" y="136.4" font-size="7.5" text-anchor="start" transform="rotate(-90 399.6 136.4)">3607</text>
+<rect x="413.0" y="140.5" width="25.0" height="225.5" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="427.9" y="136.5" font-size="7.5" text-anchor="start" transform="rotate(-90 427.9 136.5)">3606</text>
+<rect x="441.3" y="309.4" width="25.0" height="56.6" fill="#e8e8e8" stroke="black" stroke-width="0.7"/>
+<text x="456.3" y="305.4" font-size="7.5" text-anchor="start" transform="rotate(-90 456.3 305.4)">905</text>
+<rect x="469.7" y="309.1" width="25.0" height="56.9" fill="#7f7f7f" stroke="black" stroke-width="0.7"/>
+<text x="484.7" y="305.1" font-size="7.5" text-anchor="start" transform="rotate(-90 484.7 305.1)">910</text>
+<text x="441.3" y="382" font-size="11" text-anchor="middle">cas</text>
+<line x1="594" y1="60" x2="594" y2="366" stroke="black" stroke-width="1.4"/>
+<line x1="594" y1="366" x2="1054" y2="366" stroke="black" stroke-width="1.4"/>
+<text x="551" y="216" font-size="12" text-anchor="middle" transform="rotate(-90 551 216)">wall-time / iteration (ns)</text>
+<text x="824" y="408" font-size="12" text-anchor="middle">op</text>
+<rect x="613.9" y="140.4" width="25.0" height="225.6" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="628.9" y="136.4" font-size="7.5" text-anchor="start" transform="rotate(-90 628.9 136.4)">1120</text>
+<rect x="642.3" y="140.4" width="25.0" height="225.6" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="657.3" y="136.4" font-size="7.5" text-anchor="start" transform="rotate(-90 657.3 136.4)">1120</text>
+<rect x="670.7" y="309.5" width="25.0" height="56.5" fill="#e8e8e8" stroke="black" stroke-width="0.7"/>
+<text x="685.6" y="305.5" font-size="7.5" text-anchor="start" transform="rotate(-90 685.6 305.5)">281</text>
+<rect x="699.0" y="310.2" width="25.0" height="55.8" fill="#7f7f7f" stroke="black" stroke-width="0.7"/>
+<text x="714.0" y="306.2" font-size="7.5" text-anchor="start" transform="rotate(-90 714.0 306.2)">277</text>
+<text x="670.7" y="382" font-size="11" text-anchor="middle">ldadd</text>
+<rect x="767.3" y="140.4" width="25.0" height="225.6" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="782.2" y="136.4" font-size="7.5" text-anchor="start" transform="rotate(-90 782.2 136.4)">1120</text>
+<rect x="795.6" y="120.1" width="25.0" height="245.9" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="810.6" y="116.1" font-size="7.5" text-anchor="start" transform="rotate(-90 810.6 116.1)">1221</text>
+<rect x="824.0" y="309.5" width="25.0" height="56.5" fill="#e8e8e8" stroke="black" stroke-width="0.7"/>
+<text x="839.0" y="305.5" font-size="7.5" text-anchor="start" transform="rotate(-90 839.0 305.5)">281</text>
+<rect x="852.4" y="309.5" width="25.0" height="56.5" fill="#7f7f7f" stroke="black" stroke-width="0.7"/>
+<text x="867.3" y="305.5" font-size="7.5" text-anchor="start" transform="rotate(-90 867.3 305.5)">281</text>
+<text x="824.0" y="382" font-size="11" text-anchor="middle">swp</text>
+<rect x="920.6" y="140.4" width="25.0" height="225.6" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="935.6" y="136.4" font-size="7.5" text-anchor="start" transform="rotate(-90 935.6 136.4)">1120</text>
+<rect x="949.0" y="140.5" width="25.0" height="225.5" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="963.9" y="136.5" font-size="7.5" text-anchor="start" transform="rotate(-90 963.9 136.5)">1120</text>
+<rect x="977.3" y="309.5" width="25.0" height="56.5" fill="#e8e8e8" stroke="black" stroke-width="0.7"/>
+<text x="992.3" y="305.5" font-size="7.5" text-anchor="start" transform="rotate(-90 992.3 305.5)">281</text>
+<rect x="1005.7" y="309.2" width="25.0" height="56.8" fill="#7f7f7f" stroke="black" stroke-width="0.7"/>
+<text x="1020.7" y="305.2" font-size="7.5" text-anchor="start" transform="rotate(-90 1020.7 305.2)">282</text>
+<text x="977.3" y="382" font-size="11" text-anchor="middle">cas</text>
+</svg>

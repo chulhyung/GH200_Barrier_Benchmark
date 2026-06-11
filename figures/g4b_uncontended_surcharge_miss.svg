@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1778" height="546" viewBox="0 0 1778 546" font-family="sans-serif">
+<rect width="1778" height="546" fill="white"/>
+<text x="889" y="24" text-anchor="middle" font-size="16" font-weight="bold">G4 uncontended atomic ordering surcharge vs N (single thread)</text>
+<text x="889" y="42" text-anchor="middle" font-size="11.5" fill="#444">Δ cyc/op = ordered − relaxed · condition = miss · 10 repeats (median) · ≈0 (small cells are run-to-run noise)</text>
+<line x1="30" y1="60" x2="56" y2="60" stroke="#000000" stroke-width="1.8"/>
+<circle cx="43.0" cy="60.0" r="3.4" fill="#000000"/>
+<text x="61" y="63.5" font-size="11">acquire</text>
+<line x1="124.19999999999999" y1="60" x2="150.2" y2="60" stroke="#000000" stroke-width="1.8" stroke-dasharray="7,4"/>
+<rect x="133.8" y="56.6" width="6.8" height="6.8" fill="#000000"/>
+<text x="155.2" y="63.5" font-size="11">release</text>
+<line x1="218.39999999999998" y1="60" x2="244.39999999999998" y2="60" stroke="#5a5a5a" stroke-width="1.8" stroke-dasharray="2,3"/>
+<polygon points="231.4,56.1 228.0,63.4 234.8,63.4" fill="#5a5a5a"/>
+<text x="249.39999999999998" y="63.5" font-size="11">acqrel</text>
+<line x1="306.0" y1="60" x2="332.0" y2="60" stroke="#5a5a5a" stroke-width="1.8" stroke-dasharray="9,3,2,3"/>
+<polygon points="319.0,56.1 315.1,60.0 319.0,63.9 322.9,60.0" fill="#5a5a5a"/>
+<text x="337.0" y="63.5" font-size="11">seqcst</text>
+<line x1="84" y1="458.0" x2="574" y2="458.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="461.0" font-size="10" text-anchor="end" fill="#333">-0.5</text>
+<line x1="84" y1="388.0" x2="574" y2="388.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="391.0" font-size="10" text-anchor="end" fill="#333">1.1</text>
+<line x1="84" y1="318.0" x2="574" y2="318.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="321.0" font-size="10" text-anchor="end" fill="#333">2.7</text>
+<line x1="84" y1="248.0" x2="574" y2="248.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="251.0" font-size="10" text-anchor="end" fill="#333">4.3</text>
+<line x1="84" y1="178.0" x2="574" y2="178.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="181.0" font-size="10" text-anchor="end" fill="#333">5.9</text>
+<line x1="84" y1="108.0" x2="574" y2="108.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="111.0" font-size="10" text-anchor="end" fill="#333">7.5</text>
+<line x1="84" y1="436.1" x2="574" y2="436.1" stroke="#999" stroke-width="1"/>
+<line x1="84" y1="108" x2="84" y2="458" stroke="black" stroke-width="1.3"/>
+<line x1="84" y1="458" x2="574" y2="458" stroke="black" stroke-width="1.3"/>
+<text x="84.0" y="473.0" font-size="10.5" text-anchor="middle">1</text>
+<text x="165.7" y="473.0" font-size="10.5" text-anchor="middle">2</text>
+<text x="247.3" y="473.0" font-size="10.5" text-anchor="middle">4</text>
+<text x="329.0" y="473.0" font-size="10.5" text-anchor="middle">8</text>
+<text x="410.7" y="473.0" font-size="10.5" text-anchor="middle">16</text>
+<text x="492.3" y="473.0" font-size="10.5" text-anchor="middle">32</text>
+<text x="574.0" y="473.0" font-size="10.5" text-anchor="middle">64</text>
+<text x="329.0" y="488.0" font-size="11.5" text-anchor="middle">N — ldadd</text>
+<text x="43" y="283.0" font-size="11.5" text-anchor="middle" transform="rotate(-90 43 283.0)">Δ cyc / op (order − relaxed)</text>
+<path d="M84.0 453.9 L165.7 438.9 L247.3 223.0 L329.0 226.0 L410.7 436.7 L492.3 218.5 L574.0 436.4" fill="none" stroke="#000000" stroke-width="1.7"/>
+<circle cx="84.0" cy="453.9" r="3.4" fill="#000000"/>
+<circle cx="165.7" cy="438.9" r="3.4" fill="#000000"/>
+<circle cx="247.3" cy="223.0" r="3.4" fill="#000000"/>
+<circle cx="329.0" cy="226.0" r="3.4" fill="#000000"/>
+<circle cx="410.7" cy="436.7" r="3.4" fill="#000000"/>
+<circle cx="492.3" cy="218.5" r="3.4" fill="#000000"/>
+<circle cx="574.0" cy="436.4" r="3.4" fill="#000000"/>
+<path d="M84.0 445.7 L165.7 440.3 L247.3 436.3 L329.0 436.6 L410.7 436.8 L492.3 436.4 L574.0 436.6" fill="none" stroke="#000000" stroke-width="1.7" stroke-dasharray="7,4"/>
+<rect x="80.6" y="442.3" width="6.8" height="6.8" fill="#000000"/>
+<rect x="162.3" y="436.9" width="6.8" height="6.8" fill="#000000"/>
+<rect x="243.9" y="432.9" width="6.8" height="6.8" fill="#000000"/>
+<rect x="325.6" y="433.2" width="6.8" height="6.8" fill="#000000"/>
+<rect x="407.3" y="433.4" width="6.8" height="6.8" fill="#000000"/>
+<rect x="488.9" y="433.0" width="6.8" height="6.8" fill="#000000"/>
+<rect x="570.6" y="433.2" width="6.8" height="6.8" fill="#000000"/>
+<path d="M84.0 445.1 L165.7 442.4 L247.3 437.4 L329.0 436.4 L410.7 214.8 L492.3 436.5 L574.0 436.3" fill="none" stroke="#5a5a5a" stroke-width="1.7" stroke-dasharray="2,3"/>
+<polygon points="84.0,441.2 80.6,448.5 87.4,448.5" fill="#5a5a5a"/>
+<polygon points="165.7,438.5 162.3,445.8 169.1,445.8" fill="#5a5a5a"/>
+<polygon points="247.3,433.5 243.9,440.8 250.7,440.8" fill="#5a5a5a"/>
+<polygon points="329.0,432.5 325.6,439.8 332.4,439.8" fill="#5a5a5a"/>
+<polygon points="410.7,210.9 407.3,218.2 414.1,218.2" fill="#5a5a5a"/>
+<polygon points="492.3,432.6 488.9,439.9 495.7,439.9" fill="#5a5a5a"/>
+<polygon points="574.0,432.4 570.6,439.7 577.4,439.7" fill="#5a5a5a"/>
+<path d="M84.0 316.2 L165.7 441.3 L247.3 221.1 L329.0 436.2 L410.7 436.3 L492.3 436.3 L574.0 436.1" fill="none" stroke="#5a5a5a" stroke-width="1.7" stroke-dasharray="9,3,2,3"/>
+<polygon points="84.0,312.3 80.1,316.2 84.0,320.1 87.9,316.2" fill="#5a5a5a"/>
+<polygon points="165.7,437.4 161.8,441.3 165.7,445.2 169.6,441.3" fill="#5a5a5a"/>
+<polygon points="247.3,217.2 243.4,221.1 247.3,225.0 251.2,221.1" fill="#5a5a5a"/>
+<polygon points="329.0,432.3 325.1,436.2 329.0,440.1 332.9,436.2" fill="#5a5a5a"/>
+<polygon points="410.7,432.4 406.8,436.3 410.7,440.2 414.6,436.3" fill="#5a5a5a"/>
+<polygon points="492.3,432.4 488.4,436.3 492.3,440.2 496.2,436.3" fill="#5a5a5a"/>
+<polygon points="574.0,432.2 570.1,436.1 574.0,440.0 577.9,436.1" fill="#5a5a5a"/>
+<line x1="668" y1="458.0" x2="1158" y2="458.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="662" y="461.0" font-size="10" text-anchor="end" fill="#333">-0.2</text>
+<line x1="668" y1="388.0" x2="1158" y2="388.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="662" y="391.0" font-size="10" text-anchor="end" fill="#333">1.34</text>
+<line x1="668" y1="318.0" x2="1158" y2="318.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="662" y="321.0" font-size="10" text-anchor="end" fill="#333">2.88</text>
+<line x1="668" y1="248.0" x2="1158" y2="248.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="662" y="251.0" font-size="10" text-anchor="end" fill="#333">4.42</text>
+<line x1="668" y1="178.0" x2="1158" y2="178.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="662" y="181.0" font-size="10" text-anchor="end" fill="#333">5.96</text>
+<line x1="668" y1="108.0" x2="1158" y2="108.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="662" y="111.0" font-size="10" text-anchor="end" fill="#333">7.5</text>
+<line x1="668" y1="448.9" x2="1158" y2="448.9" stroke="#999" stroke-width="1"/>
+<line x1="668" y1="108" x2="668" y2="458" stroke="black" stroke-width="1.3"/>
+<line x1="668" y1="458" x2="1158" y2="458" stroke="black" stroke-width="1.3"/>
+<text x="668.0" y="473.0" font-size="10.5" text-anchor="middle">1</text>
+<text x="749.7" y="473.0" font-size="10.5" text-anchor="middle">2</text>
+<text x="831.3" y="473.0" font-size="10.5" text-anchor="middle">4</text>
+<text x="913.0" y="473.0" font-size="10.5" text-anchor="middle">8</text>
+<text x="994.7" y="473.0" font-size="10.5" text-anchor="middle">16</text>
+<text x="1076.3" y="473.0" font-size="10.5" text-anchor="middle">32</text>
+<text x="1158.0" y="473.0" font-size="10.5" text-anchor="middle">64</text>
+<text x="913.0" y="488.0" font-size="11.5" text-anchor="middle">N — swp</text>
+<text x="627" y="283.0" font-size="11.5" text-anchor="middle" transform="rotate(-90 627 283.0)">Δ cyc / op (order − relaxed)</text>
+<path d="M668.0 455.6 L749.7 450.7 L831.3 220.0 L913.0 217.0 L994.7 449.2 L1076.3 448.9 L1158.0 218.4" fill="none" stroke="#000000" stroke-width="1.7"/>
+<circle cx="668.0" cy="455.6" r="3.4" fill="#000000"/>
+<circle cx="749.7" cy="450.7" r="3.4" fill="#000000"/>
+<circle cx="831.3" cy="220.0" r="3.4" fill="#000000"/>
+<circle cx="913.0" cy="217.0" r="3.4" fill="#000000"/>
+<circle cx="994.7" cy="449.2" r="3.4" fill="#000000"/>
+<circle cx="1076.3" cy="448.9" r="3.4" fill="#000000"/>
+<circle cx="1158.0" cy="218.4" r="3.4" fill="#000000"/>
+<path d="M668.0 456.9 L749.7 452.2 L831.3 449.0 L913.0 449.0 L994.7 449.0 L1076.3 448.9 L1158.0 448.8" fill="none" stroke="#000000" stroke-width="1.7" stroke-dasharray="7,4"/>
+<rect x="664.6" y="453.5" width="6.8" height="6.8" fill="#000000"/>
+<rect x="746.3" y="448.8" width="6.8" height="6.8" fill="#000000"/>
+<rect x="827.9" y="445.6" width="6.8" height="6.8" fill="#000000"/>
+<rect x="909.6" y="445.6" width="6.8" height="6.8" fill="#000000"/>
+<rect x="991.3" y="445.6" width="6.8" height="6.8" fill="#000000"/>
+<rect x="1072.9" y="445.5" width="6.8" height="6.8" fill="#000000"/>
+<rect x="1154.6" y="445.4" width="6.8" height="6.8" fill="#000000"/>
+<path d="M668.0 456.3 L749.7 455.2 L831.3 448.8 L913.0 219.5 L994.7 225.5 L1076.3 448.9 L1158.0 448.8" fill="none" stroke="#5a5a5a" stroke-width="1.7" stroke-dasharray="2,3"/>
+<polygon points="668.0,452.4 664.6,459.7 671.4,459.7" fill="#5a5a5a"/>
+<polygon points="749.7,451.3 746.3,458.6 753.1,458.6" fill="#5a5a5a"/>
+<polygon points="831.3,444.9 827.9,452.2 834.7,452.2" fill="#5a5a5a"/>
+<polygon points="913.0,215.6 909.6,222.9 916.4,222.9" fill="#5a5a5a"/>
+<polygon points="994.7,221.6 991.3,228.9 998.1,228.9" fill="#5a5a5a"/>
+<polygon points="1076.3,445.0 1072.9,452.3 1079.7,452.3" fill="#5a5a5a"/>
+<polygon points="1158.0,444.9 1154.6,452.2 1161.4,452.2" fill="#5a5a5a"/>
+<path d="M668.0 454.0 L749.7 454.1 L831.3 450.1 L913.0 449.1 L994.7 448.9 L1076.3 449.0 L1158.0 448.8" fill="none" stroke="#5a5a5a" stroke-width="1.7" stroke-dasharray="9,3,2,3"/>
+<polygon points="668.0,450.1 664.1,454.0 668.0,457.9 671.9,454.0" fill="#5a5a5a"/>
+<polygon points="749.7,450.2 745.8,454.1 749.7,458.0 753.6,454.1" fill="#5a5a5a"/>
+<polygon points="831.3,446.2 827.4,450.1 831.3,454.0 835.2,450.1" fill="#5a5a5a"/>
+<polygon points="913.0,445.2 909.1,449.1 913.0,453.0 916.9,449.1" fill="#5a5a5a"/>
+<polygon points="994.7,445.0 990.8,448.9 994.7,452.8 998.6,448.9" fill="#5a5a5a"/>
+<polygon points="1076.3,445.1 1072.4,449.0 1076.3,452.9 1080.2,449.0" fill="#5a5a5a"/>
+<polygon points="1158.0,444.9 1154.1,448.8 1158.0,452.7 1161.9,448.8" fill="#5a5a5a"/>
+<line x1="1252" y1="458.0" x2="1742" y2="458.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="1246" y="461.0" font-size="10" text-anchor="end" fill="#333">-0.2</text>
+<line x1="1252" y1="388.0" x2="1742" y2="388.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="1246" y="391.0" font-size="10" text-anchor="end" fill="#333">0.44</text>
+<line x1="1252" y1="318.0" x2="1742" y2="318.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="1246" y="321.0" font-size="10" text-anchor="end" fill="#333">1.08</text>
+<line x1="1252" y1="248.0" x2="1742" y2="248.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="1246" y="251.0" font-size="10" text-anchor="end" fill="#333">1.72</text>
+<line x1="1252" y1="178.0" x2="1742" y2="178.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="1246" y="181.0" font-size="10" text-anchor="end" fill="#333">2.36</text>
+<line x1="1252" y1="108.0" x2="1742" y2="108.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="1246" y="111.0" font-size="10" text-anchor="end" fill="#333">3</text>
+<line x1="1252" y1="436.1" x2="1742" y2="436.1" stroke="#999" stroke-width="1"/>
+<line x1="1252" y1="108" x2="1252" y2="458" stroke="black" stroke-width="1.3"/>
+<line x1="1252" y1="458" x2="1742" y2="458" stroke="black" stroke-width="1.3"/>
+<text x="1252.0" y="473.0" font-size="10.5" text-anchor="middle">1</text>
+<text x="1333.7" y="473.0" font-size="10.5" text-anchor="middle">2</text>
+<text x="1415.3" y="473.0" font-size="10.5" text-anchor="middle">4</text>
+<text x="1497.0" y="473.0" font-size="10.5" text-anchor="middle">8</text>
+<text x="1578.7" y="473.0" font-size="10.5" text-anchor="middle">16</text>
+<text x="1660.3" y="473.0" font-size="10.5" text-anchor="middle">32</text>
+<text x="1742.0" y="473.0" font-size="10.5" text-anchor="middle">64</text>
+<text x="1497.0" y="488.0" font-size="11.5" text-anchor="middle">N — cas</text>
+<text x="1211" y="283.0" font-size="11.5" text-anchor="middle" transform="rotate(-90 1211 283.0)">Δ cyc / op (order − relaxed)</text>
+<path d="M1252.0 216.3 L1333.7 446.2 L1415.3 428.4 L1497.0 436.7 L1578.7 437.6 L1660.3 438.2 L1742.0 437.8" fill="none" stroke="#000000" stroke-width="1.7"/>
+<circle cx="1252.0" cy="216.3" r="3.4" fill="#000000"/>
+<circle cx="1333.7" cy="446.2" r="3.4" fill="#000000"/>
+<circle cx="1415.3" cy="428.4" r="3.4" fill="#000000"/>
+<circle cx="1497.0" cy="436.7" r="3.4" fill="#000000"/>
+<circle cx="1578.7" cy="437.6" r="3.4" fill="#000000"/>
+<circle cx="1660.3" cy="438.2" r="3.4" fill="#000000"/>
+<circle cx="1742.0" cy="437.8" r="3.4" fill="#000000"/>
+<path d="M1252.0 450.5 L1333.7 451.1 L1415.3 438.7 L1497.0 437.5 L1578.7 437.2 L1660.3 436.2 L1742.0 436.8" fill="none" stroke="#000000" stroke-width="1.7" stroke-dasharray="7,4"/>
+<rect x="1248.6" y="447.1" width="6.8" height="6.8" fill="#000000"/>
+<rect x="1330.3" y="447.7" width="6.8" height="6.8" fill="#000000"/>
+<rect x="1411.9" y="435.3" width="6.8" height="6.8" fill="#000000"/>
+<rect x="1493.6" y="434.1" width="6.8" height="6.8" fill="#000000"/>
+<rect x="1575.3" y="433.8" width="6.8" height="6.8" fill="#000000"/>
+<rect x="1656.9" y="432.8" width="6.8" height="6.8" fill="#000000"/>
+<rect x="1738.6" y="433.4" width="6.8" height="6.8" fill="#000000"/>
+<path d="M1252.0 439.0 L1333.7 448.2 L1415.3 436.0 L1497.0 440.2 L1578.7 438.1 L1660.3 437.9 L1742.0 437.7" fill="none" stroke="#5a5a5a" stroke-width="1.7" stroke-dasharray="2,3"/>
+<polygon points="1252.0,435.1 1248.6,442.4 1255.4,442.4" fill="#5a5a5a"/>
+<polygon points="1333.7,444.3 1330.3,451.6 1337.1,451.6" fill="#5a5a5a"/>
+<polygon points="1415.3,432.1 1411.9,439.4 1418.7,439.4" fill="#5a5a5a"/>
+<polygon points="1497.0,436.3 1493.6,443.6 1500.4,443.6" fill="#5a5a5a"/>
+<polygon points="1578.7,434.2 1575.3,441.5 1582.1,441.5" fill="#5a5a5a"/>
+<polygon points="1660.3,434.0 1656.9,441.3 1663.7,441.3" fill="#5a5a5a"/>
+<polygon points="1742.0,433.8 1738.6,441.1 1745.4,441.1" fill="#5a5a5a"/>
+<path d="M1252.0 453.7 L1333.7 445.0 L1415.3 436.2 L1497.0 438.9 L1578.7 437.2 L1660.3 437.9 L1742.0 438.0" fill="none" stroke="#5a5a5a" stroke-width="1.7" stroke-dasharray="9,3,2,3"/>
+<polygon points="1252.0,449.8 1248.1,453.7 1252.0,457.6 1255.9,453.7" fill="#5a5a5a"/>
+<polygon points="1333.7,441.1 1329.8,445.0 1333.7,448.9 1337.6,445.0" fill="#5a5a5a"/>
+<polygon points="1415.3,432.3 1411.4,436.2 1415.3,440.1 1419.2,436.2" fill="#5a5a5a"/>
+<polygon points="1497.0,435.0 1493.1,438.9 1497.0,442.8 1500.9,438.9" fill="#5a5a5a"/>
+<polygon points="1578.7,433.3 1574.8,437.2 1578.7,441.1 1582.6,437.2" fill="#5a5a5a"/>
+<polygon points="1660.3,434.0 1656.4,437.9 1660.3,441.8 1664.2,437.9" fill="#5a5a5a"/>
+<polygon points="1742.0,434.1 1738.1,438.0 1742.0,441.9 1745.9,438.0" fill="#5a5a5a"/>
+<text x="30" y="538" font-size="9" fill="#666">GH200 ARM Neoverse-V2, 3.375 GHz fixed (1 cyc ≈ 0.296 ns), 1,000,000 iters/repeat; paired baseline+treatment; PMU via perf_event_open (user-mode); objdump-verified.</text>
+</svg>

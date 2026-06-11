@@ -1,0 +1,39 @@
+[run stlr] 2026-06-10T20:14:26Z host=rg-uwing-1 core=0 numa=0
+/nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/stlr/bench.c: In function ‘main’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/stlr/bench.c:70:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   70 |         if (cb.ctx_switches>mcs) mcs=cb.ctx_switches; if (cb.migrations>mmig) mmig=cb.migrations; if (cb.page_faults>mpf) mpf=cb.page_faults;
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/stlr/bench.c:70:55: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   70 |         if (cb.ctx_switches>mcs) mcs=cb.ctx_switches; if (cb.migrations>mmig) mmig=cb.migrations; if (cb.page_faults>mpf) mpf=cb.page_faults;
+      |                                                       ^~
+build sha256: acbc37aae9fdc92714c670f1ae054a054d5f5bce2f56863ec0e007f88690c6b2  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/stlr/out/objdump.snippet (2 lines)
+[stlr] place=after_group cond=miss N=1 : base 10/10 treat 10/10 (sink=9999990000000)
+[stlr] place=after_group cond=miss N=2 : base 10/10 treat 10/10 (sink=39999980000000)
+[stlr] place=after_group cond=miss N=4 : base 10/10 treat 10/10 (sink=159999960000000)
+[stlr] place=after_group cond=miss N=8 : base 10/10 treat 10/10 (sink=639999920000000)
+[stlr] place=after_group cond=miss N=16 : base 10/10 treat 10/10 (sink=2559999840000000)
+[stlr] place=after_group cond=miss N=32 : base 10/10 treat 10/10 (sink=10239999680000000)
+[stlr] place=after_group cond=miss N=64 : base 10/10 treat 10/10 (sink=40959999360000000)
+[stlr] place=after_group cond=hit N=1 : base 10/10 treat 10/10 (sink=10039989800000)
+[stlr] place=after_group cond=hit N=2 : base 10/10 treat 10/10 (sink=40159979600000)
+[stlr] place=after_group cond=hit N=4 : base 10/10 treat 10/10 (sink=160639959200000)
+[stlr] place=after_group cond=hit N=8 : base 10/10 treat 10/10 (sink=642559918400000)
+[stlr] place=after_group cond=hit N=16 : base 10/10 treat 10/10 (sink=2570239836800000)
+[stlr] place=after_group cond=hit N=32 : base 10/10 treat 10/10 (sink=10280959673600000)
+[stlr] place=after_group cond=hit N=64 : base 10/10 treat 10/10 (sink=41123839347200000)
+[stlr] place=after_every cond=miss N=1 : base 10/10 treat 10/10 (sink=9999990000000)
+[stlr] place=after_every cond=miss N=2 : base 10/10 treat 10/10 (sink=39999980000000)
+[stlr] place=after_every cond=miss N=4 : base 10/10 treat 10/10 (sink=159999960000000)
+[stlr] place=after_every cond=miss N=8 : base 10/10 treat 10/10 (sink=639999920000000)
+[stlr] place=after_every cond=miss N=16 : base 10/10 treat 10/10 (sink=2559999840000000)
+[stlr] place=after_every cond=miss N=32 : base 10/10 treat 10/10 (sink=10239999680000000)
+[stlr] place=after_every cond=miss N=64 : base 10/10 treat 10/10 (sink=40959999360000000)
+[stlr] place=after_every cond=hit N=1 : base 10/10 treat 10/10 (sink=10039989800000)
+[stlr] place=after_every cond=hit N=2 : base 10/10 treat 10/10 (sink=40159979600000)
+[stlr] place=after_every cond=hit N=4 : base 10/10 treat 10/10 (sink=160639959200000)
+[stlr] place=after_every cond=hit N=8 : base 10/10 treat 10/10 (sink=642559918400000)
+[stlr] place=after_every cond=hit N=16 : base 10/10 treat 10/10 (sink=2570239836800000)
+[stlr] place=after_every cond=hit N=32 : base 10/10 treat 10/10 (sink=10280959673600000)
+[stlr] place=after_every cond=hit N=64 : base 10/10 treat 10/10 (sink=41123839347200000)
+[run stlr] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/stlr/out

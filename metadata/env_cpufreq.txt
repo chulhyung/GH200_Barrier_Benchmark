@@ -1,0 +1,18 @@
+### scaling_governor (cpu0)
+performance
+### scaling_cur_freq (cpu0, kHz)
+3375000
+### scaling_min/max_freq (cpu0, kHz)
+81000
+3375000
+### cpupower (may need perms)
+WARNING: cpupower not found for kernel 6.8.0-1051
+
+  You may need to install the following packages for this specific kernel:
+    linux-tools-6.8.0-1051-nvidia-64k
+    linux-cloud-tools-6.8.0-1051-nvidia-64k
+
+  You may also want to install one of the following packages to keep up to date:
+    linux-tools-nvidia-64k
+    linux-cloud-tools-nvidia-64k
+cpupower unavailable

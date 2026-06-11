@@ -1,0 +1,3 @@
+### $ getconf LEVEL1_DCACHE_LINESIZE
+64
+### exit=0

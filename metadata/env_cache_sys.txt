@@ -1,0 +1,5 @@
+### per-cpu cache topology (/sys)
+L1 Data: size=64K line=64B
+L1 Instruction: size=64K line=64B
+L2 Unified: size=1024K line=64B
+L3 Unified: size=116736K line=64B

@@ -1,0 +1,39 @@
+[run ldapr] 2026-06-10T20:20:46Z host=rg-uwing-1 core=0 numa=0
+/nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldapr/bench.c: In function ‘main’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldapr/bench.c:70:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   70 |         if (cb.ctx_switches>mcs) mcs=cb.ctx_switches; if (cb.migrations>mmig) mmig=cb.migrations; if (cb.page_faults>mpf) mpf=cb.page_faults;
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldapr/bench.c:70:55: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   70 |         if (cb.ctx_switches>mcs) mcs=cb.ctx_switches; if (cb.migrations>mmig) mmig=cb.migrations; if (cb.page_faults>mpf) mpf=cb.page_faults;
+      |                                                       ^~
+build sha256: 0602ff66591aa026ad01a8cf1c1db5196c1be8900dd157ad78439c254fc47a62  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldapr/out/objdump.snippet (2 lines)
+[ldapr] place=after_group cond=miss N=1 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=miss N=2 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=miss N=4 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=miss N=8 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=miss N=16 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=miss N=32 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=miss N=64 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=hit N=1 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=hit N=2 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=hit N=4 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=hit N=8 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=hit N=16 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=hit N=32 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_group cond=hit N=64 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=miss N=1 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=miss N=2 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=miss N=4 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=miss N=8 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=miss N=16 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=miss N=32 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=miss N=64 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=hit N=1 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=hit N=2 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=hit N=4 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=hit N=8 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=hit N=16 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=hit N=32 : base 10/10 treat 10/10 (sink=0)
+[ldapr] place=after_every cond=hit N=64 : base 10/10 treat 10/10 (sink=0)
+[run ldapr] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldapr/out

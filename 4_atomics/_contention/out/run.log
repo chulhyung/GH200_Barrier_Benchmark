@@ -1,0 +1,102 @@
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c: In function ‘pick’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:54:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   54 |     if P(ldadd,relaxed); if P(ldadd,acquire); if P(ldadd,release); if P(ldadd,acqrel); if P(ldadd,seqcst);
+      |     ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:54:26: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   54 |     if P(ldadd,relaxed); if P(ldadd,acquire); if P(ldadd,release); if P(ldadd,acqrel); if P(ldadd,seqcst);
+      |                          ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:55:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   55 |     if P(swp,relaxed); if P(swp,acquire); if P(swp,release); if P(swp,acqrel); if P(swp,seqcst);
+      |     ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:55:24: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   55 |     if P(swp,relaxed); if P(swp,acquire); if P(swp,release); if P(swp,acqrel); if P(swp,seqcst);
+      |                        ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:56:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   56 |     if P(cas,relaxed); if P(cas,acquire); if P(cas,release); if P(cas,acqrel); if P(cas,seqcst);
+      |     ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:56:24: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   56 |     if P(cas,relaxed); if P(cas,acquire); if P(cas,release); if P(cas,acqrel); if P(cas,seqcst);
+      |                        ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c: In function ‘cpmu_read’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:77:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   77 |         if(r.nr>=1)c->cyc=r.val[0]; if(r.nr>=2)c->ins=r.val[1]; if(r.nr>=3)c->l1=r.val[2];
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:77:37: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   77 |         if(r.nr>=1)c->cyc=r.val[0]; if(r.nr>=2)c->ins=r.val[1]; if(r.nr>=3)c->l1=r.val[2];
+      |                                     ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:78:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   78 |         if(r.nr>=4)c->ll=r.val[3]; if(r.nr>=5)c->mem=r.val[4]; if(r.nr>=6)c->stall=r.val[5];
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:78:36: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   78 |         if(r.nr>=4)c->ll=r.val[3]; if(r.nr>=5)c->mem=r.val[4]; if(r.nr>=6)c->stall=r.val[5];
+      |                                    ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c: In function ‘run_phase’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:104:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  104 |         if(a[t].tstart>maxstart) maxstart=a[t].tstart; if(a[t].tstop<minstop) minstop=a[t].tstop; }
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:104:56: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  104 |         if(a[t].tstart>maxstart) maxstart=a[t].tstart; if(a[t].tstop<minstop) minstop=a[t].tstop; }
+      |                                                        ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c: In function ‘main’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:125:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  125 |     if(T<1)T=1; if(T>64)T=64;
+      |     ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:125:17: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  125 |     if(T<1)T=1; if(T>64)T=64;
+      |                 ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:144:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  144 |         if(b.mux<muxmin)muxmin=b.mux; if(t.mux<muxmin)muxmin=t.mux;
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/bench.c:144:39: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  144 |         if(b.mux<muxmin)muxmin=b.mux; if(t.mux<muxmin)muxmin=t.mux;
+      |                                       ^~
+build sha256: b2b6d1fd54138c737c56f56362705a77b0ff8ebd1192a4ec526a03b550b54e82 gcc 11
+[contend] op=ldadd order=acquire T=1 : base 13.38 / treat 13.41 cyc/op (Δ0.03) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=acquire T=2 : base 35.83 / treat 35.99 cyc/op (Δ0.16) l1/op b0.097 t0.098 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=acquire T=4 : base 73.67 / treat 73.70 cyc/op (Δ0.05) l1/op b0.100 t0.100 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=acquire T=8 : base 150.39 / treat 150.57 cyc/op (Δ0.11) l1/op b0.108 t0.108 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=release T=1 : base 13.38 / treat 13.38 cyc/op (Δ0.10) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=release T=2 : base 41.45 / treat 41.45 cyc/op (Δ-0.18) l1/op b0.122 t0.122 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=release T=4 : base 70.55 / treat 70.58 cyc/op (Δ0.08) l1/op b0.084 t0.084 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=release T=8 : base 146.85 / treat 146.79 cyc/op (Δ-0.15) l1/op b0.083 t0.083 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=acqrel T=1 : base 13.37 / treat 13.35 cyc/op (Δ-0.02) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=acqrel T=2 : base 42.87 / treat 42.90 cyc/op (Δ0.03) l1/op b0.129 t0.129 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=acqrel T=4 : base 72.69 / treat 72.86 cyc/op (Δ0.12) l1/op b0.082 t0.082 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=acqrel T=8 : base 148.10 / treat 147.67 cyc/op (Δ-0.08) l1/op b0.103 t0.103 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=seqcst T=1 : base 13.38 / treat 13.38 cyc/op (Δ-0.09) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=seqcst T=2 : base 36.03 / treat 36.10 cyc/op (Δ0.06) l1/op b0.084 t0.084 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=seqcst T=4 : base 70.15 / treat 70.30 cyc/op (Δ-0.01) l1/op b0.076 t0.076 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=ldadd order=seqcst T=8 : base 149.74 / treat 149.65 cyc/op (Δ-0.10) l1/op b0.100 t0.100 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=acquire T=1 : base 13.28 / treat 13.47 cyc/op (Δ0.19) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=acquire T=2 : base 35.66 / treat 36.39 cyc/op (Δ0.73) l1/op b0.083 t0.084 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=acquire T=4 : base 70.53 / treat 70.23 cyc/op (Δ-0.30) l1/op b0.091 t0.091 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=acquire T=8 : base 150.04 / treat 153.56 cyc/op (Δ3.54) l1/op b0.108 t0.110 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=release T=1 : base 13.28 / treat 13.28 cyc/op (Δ-0.00) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=release T=2 : base 37.81 / treat 37.81 cyc/op (Δ0.00) l1/op b0.091 t0.091 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=release T=4 : base 85.60 / treat 85.62 cyc/op (Δ0.02) l1/op b0.143 t0.143 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=release T=8 : base 153.25 / treat 153.37 cyc/op (Δ-0.02) l1/op b0.111 t0.111 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=acqrel T=1 : base 13.28 / treat 13.47 cyc/op (Δ0.19) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=acqrel T=2 : base 34.44 / treat 34.79 cyc/op (Δ0.35) l1/op b0.083 t0.083 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=acqrel T=4 : base 80.93 / treat 80.24 cyc/op (Δ-0.72) l1/op b0.125 t0.125 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=acqrel T=8 : base 150.77 / treat 151.60 cyc/op (Δ0.85) l1/op b0.100 t0.100 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=seqcst T=1 : base 13.28 / treat 13.38 cyc/op (Δ0.10) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=seqcst T=2 : base 36.83 / treat 36.30 cyc/op (Δ-0.53) l1/op b0.083 t0.081 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=seqcst T=4 : base 75.32 / treat 75.50 cyc/op (Δ0.18) l1/op b0.111 t0.111 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=swp order=seqcst T=8 : base 131.80 / treat 134.88 cyc/op (Δ3.03) l1/op b0.071 t0.073 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=acquire T=1 : base 20.00 / treat 20.00 cyc/op (Δ0.00) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=acquire T=2 : base 122.69 / treat 122.72 cyc/op (Δ0.03) l1/op b0.249 t0.249 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=acquire T=4 : base 225.47 / treat 225.46 cyc/op (Δ0.00) l1/op b0.214 t0.214 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=acquire T=8 : base 512.70 / treat 512.67 cyc/op (Δ-0.04) l1/op b0.300 t0.300 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=release T=1 : base 20.00 / treat 20.00 cyc/op (Δ-0.00) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=release T=2 : base 108.14 / treat 108.16 cyc/op (Δ0.03) l1/op b0.173 t0.173 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=release T=4 : base 206.75 / treat 206.94 cyc/op (Δ-0.14) l1/op b0.166 t0.166 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=release T=8 : base 466.42 / treat 466.42 cyc/op (Δ0.01) l1/op b0.214 t0.214 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=acqrel T=1 : base 20.00 / treat 20.00 cyc/op (Δ0.00) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=acqrel T=2 : base 110.98 / treat 111.01 cyc/op (Δ0.02) l1/op b0.182 t0.182 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=acqrel T=4 : base 221.78 / treat 221.80 cyc/op (Δ0.04) l1/op b0.251 t0.251 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=acqrel T=8 : base 405.46 / treat 405.41 cyc/op (Δ-0.04) l1/op b0.168 t0.168 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=seqcst T=1 : base 20.00 / treat 20.00 cyc/op (Δ-0.00) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=seqcst T=2 : base 114.96 / treat 114.97 cyc/op (Δ-0.05) l1/op b0.211 t0.211 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=seqcst T=4 : base 214.55 / treat 214.44 cyc/op (Δ-0.13) l1/op b0.185 t0.185 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[contend] op=cas order=seqcst T=8 : base 488.20 / treat 488.19 cyc/op (Δ0.03) l1/op b0.250 t0.250 rem/op 0.000 pin=1 overlap=1 mux=1.000
+[g4 contention] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/out

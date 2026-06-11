@@ -1,0 +1,94 @@
+[2026-06-10T20:11:02Z] RERUN START job=141441 host-side=rg-login.crnch.gatech.edu; single-thread=14 contention=2
+[2026-06-10T20:11:02Z] ST  begin 1_store_side/dmb_ish
+[run dmb_ish] 2026-06-10T20:11:02Z host=rg-uwing-1 core=0 numa=0
+build sha256: 4e392cab528118ed3e3bdd069bb8430a964c53645e6e47ad155de937add9d3c5  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/dmb_ish/out/objdump.snippet (2 lines)
+[run dmb_ish] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/dmb_ish/out
+[2026-06-10T20:11:59Z] ST  done  1_store_side/dmb_ish
+[2026-06-10T20:11:59Z] ST  begin 1_store_side/dmb_sy
+[run dmb_sy] 2026-06-10T20:11:59Z host=rg-uwing-1 core=0 numa=0
+build sha256: e00c470884834c18cf176054b6cbdeaec11b60c3cd42cddf3b2776af85c62b0c  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/dmb_sy/out/objdump.snippet (2 lines)
+[run dmb_sy] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/dmb_sy/out
+[2026-06-10T20:12:58Z] ST  done  1_store_side/dmb_sy
+[2026-06-10T20:12:58Z] ST  begin 1_store_side/dmb_ishst
+[run dmb_ishst] 2026-06-10T20:12:58Z host=rg-uwing-1 core=0 numa=0
+build sha256: b2a9e364512f9eb8edba8dd9489205626e18d77877d5f2867dcfb18ffe0e188f  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/dmb_ishst/out/objdump.snippet (2 lines)
+[run dmb_ishst] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/dmb_ishst/out
+[2026-06-10T20:13:42Z] ST  done  1_store_side/dmb_ishst
+[2026-06-10T20:13:42Z] ST  begin 1_store_side/dmb_st
+[run dmb_st] 2026-06-10T20:13:42Z host=rg-uwing-1 core=0 numa=0
+build sha256: 9748b31f94ae9fbb547e29b558de467ee42bbac7f0635eaca8905fc578c4c265  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/dmb_st/out/objdump.snippet (2 lines)
+[run dmb_st] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/dmb_st/out
+[2026-06-10T20:14:26Z] ST  done  1_store_side/dmb_st
+[2026-06-10T20:14:26Z] ST  begin 1_store_side/stlr
+[run stlr] 2026-06-10T20:14:26Z host=rg-uwing-1 core=0 numa=0
+build sha256: acbc37aae9fdc92714c670f1ae054a054d5f5bce2f56863ec0e007f88690c6b2  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/stlr/out/objdump.snippet (2 lines)
+[run stlr] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/1_store_side/stlr/out
+[2026-06-10T20:15:03Z] ST  done  1_store_side/stlr
+[2026-06-10T20:15:03Z] ST  begin 2_load_side/dmb_ish
+[run dmb_ish] 2026-06-10T20:15:03Z host=rg-uwing-1 core=0 numa=0
+build sha256: 71fde1d6b1f092a4174aa20ed21930390d7cfe1919c6b6170da5a50dfce77fbe  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_ish/out/objdump.snippet (2 lines)
+[run dmb_ish] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_ish/out
+[2026-06-10T20:16:11Z] ST  done  2_load_side/dmb_ish
+[2026-06-10T20:16:11Z] ST  begin 2_load_side/dmb_sy
+[run dmb_sy] 2026-06-10T20:16:11Z host=rg-uwing-1 core=0 numa=0
+build sha256: 447221510cb699dfdc05fd35b98acbef897fea32f2aa8497cc63ec5950f8f2b5  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_sy/out/objdump.snippet (2 lines)
+[run dmb_sy] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_sy/out
+[2026-06-10T20:17:20Z] ST  done  2_load_side/dmb_sy
+[2026-06-10T20:17:20Z] ST  begin 2_load_side/dmb_ishld
+[run dmb_ishld] 2026-06-10T20:17:20Z host=rg-uwing-1 core=0 numa=0
+build sha256: 2329d6f15774f0c1c9c68447dff9aee615799ede378357101fe1eec48a39c116  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_ishld/out/objdump.snippet (2 lines)
+[run dmb_ishld] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_ishld/out
+[2026-06-10T20:18:28Z] ST  done  2_load_side/dmb_ishld
+[2026-06-10T20:18:28Z] ST  begin 2_load_side/dmb_ld
+[run dmb_ld] 2026-06-10T20:18:28Z host=rg-uwing-1 core=0 numa=0
+build sha256: b556befe235fee4ef0b778d20f0038565b8089775f825c1cdcc62e7c18f6e496  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_ld/out/objdump.snippet (2 lines)
+[run dmb_ld] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_ld/out
+[2026-06-10T20:19:36Z] ST  done  2_load_side/dmb_ld
+[2026-06-10T20:19:36Z] ST  begin 2_load_side/ldar
+[run ldar] 2026-06-10T20:19:36Z host=rg-uwing-1 core=0 numa=0
+build sha256: 0473c3794129531b2d6e0720533d98c5e03e3db4edc592f3a50ba38117fa4adf  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldar/out/objdump.snippet (2 lines)
+[run ldar] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldar/out
+[2026-06-10T20:20:46Z] ST  done  2_load_side/ldar
+[2026-06-10T20:20:46Z] ST  begin 2_load_side/ldapr
+[run ldapr] 2026-06-10T20:20:46Z host=rg-uwing-1 core=0 numa=0
+build sha256: 0602ff66591aa026ad01a8cf1c1db5196c1be8900dd157ad78439c254fc47a62  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldapr/out/objdump.snippet (2 lines)
+[run ldapr] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldapr/out
+[2026-06-10T20:21:55Z] ST  done  2_load_side/ldapr
+[2026-06-10T20:21:55Z] ST  begin 4_atomics/ldadd
+[run ldadd] 2026-06-10T20:21:56Z host=rg-uwing-1 core=0 numa=0
+build sha256: c85c1d3c4b2cd2882b401e2cc952babeca1383e5d313264b27b6f985023e8a0e  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/ldadd/out/objdump.snippet (1 lines)
+[run ldadd] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/ldadd/out
+[2026-06-10T20:23:49Z] ST  done  4_atomics/ldadd
+[2026-06-10T20:23:49Z] ST  begin 4_atomics/swp
+[run swp] 2026-06-10T20:23:49Z host=rg-uwing-1 core=0 numa=0
+build sha256: 075f0dc4fb213c59788d4863855543bffaff0fd38a45cc52f9473cebc9d12266  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/swp/out/objdump.snippet (1 lines)
+[run swp] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/swp/out
+[2026-06-10T20:25:43Z] ST  done  4_atomics/swp
+[2026-06-10T20:25:43Z] ST  begin 4_atomics/cas
+[run cas] 2026-06-10T20:25:43Z host=rg-uwing-1 core=0 numa=0
+build sha256: 16c863bf0d77c67e0b0631e253012dab23ed63d2d6e5c82ce3753249294cc90e  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/cas/out/objdump.snippet (1 lines)
+[run cas] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/cas/out
+[2026-06-10T20:27:39Z] ST  done  4_atomics/cas
+[2026-06-10T20:27:39Z] CON begin 3_contention/_contention
+build sha256: d44b3fdca7592b396ff0932b29018d467f36c0674b5435868c31e244ef7490b6 gcc 11
+[g3 contention] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/out
+[2026-06-10T20:27:43Z] CON done  3_contention/_contention
+[2026-06-10T20:27:43Z] CON begin 4_atomics/_contention
+build sha256: b2b6d1fd54138c737c56f56362705a77b0ff8ebd1192a4ec526a03b550b54e82 gcc 11
+[g4 contention] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/4_atomics/_contention/out
+[2026-06-10T20:28:37Z] CON done  4_atomics/_contention
+[2026-06-10T20:28:37Z] RERUN COMPLETE

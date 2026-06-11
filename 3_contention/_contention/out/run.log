@@ -1,0 +1,43 @@
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c: In function ‘cpmu_read’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c:68:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   68 |         if(r.nr>=1)c->cyc=r.val[0]; if(r.nr>=2)c->ins=r.val[1]; if(r.nr>=3)c->l1=r.val[2];
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c:68:37: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   68 |         if(r.nr>=1)c->cyc=r.val[0]; if(r.nr>=2)c->ins=r.val[1]; if(r.nr>=3)c->l1=r.val[2];
+      |                                     ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c:69:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   69 |         if(r.nr>=4)c->ll=r.val[3]; if(r.nr>=5)c->mem=r.val[4]; if(r.nr>=6)c->stall=r.val[5]; if(r.nr>=7)c->rem=r.val[6]; } }
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c:69:36: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   69 |         if(r.nr>=4)c->ll=r.val[3]; if(r.nr>=5)c->mem=r.val[4]; if(r.nr>=6)c->stall=r.val[5]; if(r.nr>=7)c->rem=r.val[6]; } }
+      |                                    ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c: In function ‘run_phase’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c:93:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   93 |         if(a[t].tstart>maxstart)maxstart=a[t].tstart; if(a[t].tstop<minstop)minstop=a[t].tstop; }
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c:93:55: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   93 |         if(a[t].tstart>maxstart)maxstart=a[t].tstart; if(a[t].tstop<minstop)minstop=a[t].tstop; }
+      |                                                       ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c: In function ‘main’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c:113:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  113 |     if(T<1)T=1; if(T>64)T=64;
+      |     ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c:113:17: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  113 |     if(T<1)T=1; if(T>64)T=64;
+      |                 ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c:132:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  132 |         if(b.mux<muxmin)muxmin=b.mux; if(t.mux<muxmin)muxmin=t.mux;
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/bench.c:132:39: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  132 |         if(b.mux<muxmin)muxmin=b.mux; if(t.mux<muxmin)muxmin=t.mux;
+      |                                       ^~
+build sha256: d44b3fdca7592b396ff0932b29018d467f36c0674b5435868c31e244ef7490b6 gcc 11
+[single-line] var=ldar T=1 : base 1.19 / treat 17.34 cyc/op (D16.15) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1
+[single-line] var=ldar T=2 : base 1.84 / treat 101.56 cyc/op (D99.73) l1/op b0.003 t0.172 rem/op 0.000 pin=1 overlap=1
+[single-line] var=ldar T=4 : base 4.46 / treat 203.47 cyc/op (D199.18) l1/op b0.005 t0.213 rem/op 0.000 pin=1 overlap=1
+[single-line] var=ldar T=8 : base 8.93 / treat 366.50 cyc/op (D357.54) l1/op b0.004 t0.165 rem/op 0.000 pin=1 overlap=1
+[single-line] var=ldapr T=1 : base 1.19 / treat 3.00 cyc/op (D1.81) l1/op b0.000 t0.000 rem/op 0.000 pin=1 overlap=1
+[single-line] var=ldapr T=2 : base 1.81 / treat 8.99 cyc/op (D7.17) l1/op b0.003 t0.016 rem/op 0.000 pin=1 overlap=1
+[single-line] var=ldapr T=4 : base 4.77 / treat 16.79 cyc/op (D12.03) l1/op b0.005 t0.016 rem/op 0.000 pin=1 overlap=1
+[single-line] var=ldapr T=8 : base 9.19 / treat 35.45 cyc/op (D26.35) l1/op b0.004 t0.015 rem/op 0.000 pin=1 overlap=1
+[g3 contention] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/3_contention/_contention/out

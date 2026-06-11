@@ -1,0 +1,39 @@
+[run ldar] 2026-06-10T20:19:36Z host=rg-uwing-1 core=0 numa=0
+/nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldar/bench.c: In function ‘main’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldar/bench.c:70:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   70 |         if (cb.ctx_switches>mcs) mcs=cb.ctx_switches; if (cb.migrations>mmig) mmig=cb.migrations; if (cb.page_faults>mpf) mpf=cb.page_faults;
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldar/bench.c:70:55: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   70 |         if (cb.ctx_switches>mcs) mcs=cb.ctx_switches; if (cb.migrations>mmig) mmig=cb.migrations; if (cb.page_faults>mpf) mpf=cb.page_faults;
+      |                                                       ^~
+build sha256: 0473c3794129531b2d6e0720533d98c5e03e3db4edc592f3a50ba38117fa4adf  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldar/out/objdump.snippet (2 lines)
+[ldar] place=after_group cond=miss N=1 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=miss N=2 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=miss N=4 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=miss N=8 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=miss N=16 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=miss N=32 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=miss N=64 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=hit N=1 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=hit N=2 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=hit N=4 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=hit N=8 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=hit N=16 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=hit N=32 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_group cond=hit N=64 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=miss N=1 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=miss N=2 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=miss N=4 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=miss N=8 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=miss N=16 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=miss N=32 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=miss N=64 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=hit N=1 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=hit N=2 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=hit N=4 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=hit N=8 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=hit N=16 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=hit N=32 : base 10/10 treat 10/10 (sink=0)
+[ldar] place=after_every cond=hit N=64 : base 10/10 treat 10/10 (sink=0)
+[run ldar] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/ldar/out

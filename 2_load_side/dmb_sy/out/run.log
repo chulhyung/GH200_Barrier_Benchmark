@@ -1,0 +1,39 @@
+[run dmb_sy] 2026-06-10T20:16:11Z host=rg-uwing-1 core=0 numa=0
+/nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_sy/bench.c: In function ‘main’:
+/nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_sy/bench.c:74:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   74 |         if (cb.ctx_switches>mcs) mcs=cb.ctx_switches; if (cb.migrations>mmig) mmig=cb.migrations; if (cb.page_faults>mpf) mpf=cb.page_faults;
+      |         ^~
+/nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_sy/bench.c:74:55: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   74 |         if (cb.ctx_switches>mcs) mcs=cb.ctx_switches; if (cb.migrations>mmig) mmig=cb.migrations; if (cb.page_faults>mpf) mpf=cb.page_faults;
+      |                                                       ^~
+build sha256: 447221510cb699dfdc05fd35b98acbef897fea32f2aa8497cc63ec5950f8f2b5  gcc 11
+objdump dmb opcodes -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_sy/out/objdump.snippet (2 lines)
+[dmb_sy] place=after_group cond=miss N=1 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=miss N=2 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=miss N=4 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=miss N=8 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=miss N=16 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=miss N=32 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=miss N=64 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=hit N=1 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=hit N=2 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=hit N=4 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=hit N=8 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=hit N=16 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=hit N=32 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_group cond=hit N=64 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=miss N=1 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=miss N=2 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=miss N=4 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=miss N=8 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=miss N=16 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=miss N=32 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=miss N=64 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=hit N=1 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=hit N=2 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=hit N=4 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=hit N=8 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=hit N=16 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=hit N=32 : base 10/10 treat 10/10 (sink=0)
+[dmb_sy] place=after_every cond=hit N=64 : base 10/10 treat 10/10 (sink=0)
+[run dmb_sy] DONE -> /nethome/jpark878/memory_barrier/barrierbench_extend/2_load_side/dmb_sy/out

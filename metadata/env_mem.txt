@@ -1,0 +1,25 @@
+### /proc/meminfo (head)
+MemTotal:       601676352 kB
+MemFree:        544757376 kB
+MemAvailable:   544797184 kB
+Buffers:         3888832 kB
+Cached:         29228928 kB
+SwapCached:            0 kB
+Active:          3807616 kB
+Inactive:       30685760 kB
+Active(anon):    1425152 kB
+Inactive(anon):        0 kB
+Active(file):    2382464 kB
+Inactive(file): 30685760 kB
+Unevictable:       38272 kB
+Mlocked:           29248 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Zswap:                 0 kB
+Zswapped:              0 kB
+Dirty:              3072 kB
+Writeback:             0 kB
+### transparent hugepage
+always [madvise] never
+### ulimit -l (mlock KB)
+unlimited
