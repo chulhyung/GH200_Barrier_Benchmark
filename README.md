@@ -1,8 +1,9 @@
 # barrierbench_extend — ARM memory-ordering cost on GH200 Neoverse-V2
 
 Hardware microbenchmarks measuring the cost of memory-ordered instructions (`dmb`,
-`stlr`/`ldar`/`ldapr`, LSE atomics) on a conventional weak-memory ARM core —
-supporting evidence for the TEMPO paper (`../docs/main.pdf`, MICRO 2026). This is
+`stlr`/`ldar`/`ldapr`, LSE atomics) on a conventional weak-memory ARM core.
+
+This is
 the **top-level report**: Abstract + methodology summary (→ [`METHODOLOGY.md`](METHODOLOGY.md)) and results overview (→ per-group `README.md`) + layout.
 
 ## Abstract
