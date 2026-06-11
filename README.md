@@ -3,10 +3,9 @@
 Hardware microbenchmarks measuring the cost of memory-ordered instructions (`dmb`,
 `stlr`/`ldar`/`ldapr`, LSE atomics) on a conventional weak-memory ARM core —
 supporting evidence for the TEMPO paper (`../docs/main.pdf`, MICRO 2026). This is
-the **top-level report**: TL;DR + methodology summary (→ [`METHODOLOGY.md`](METHODOLOGY.md))
-+ results overview (→ per-group `README.md`) + layout.
+the **top-level report**: Abstract + methodology summary (→ [`METHODOLOGY.md`](METHODOLOGY.md)) and results overview (→ per-group `README.md`) + layout.
 
-## TL;DR
+## Abstract
 
 - **What** — cost of ARM memory-ordered instructions on **Neoverse-V2** (`rg-uwing-1`, 3.375 GHz fixed), measured **paired** (baseline + treatment in one process), **1M iters × 10–15 repeats** median, PMU via `perf_event_open`, **objdump-verified**, **gate-clean**.
 - **G1 store-side** (miss · after_every · N=64, Δ per 64-store iteration): full `dmb` **+3401…+3858** > store-only `dmb` **+2381…+2400** ≳ store-release `stlr` **+2194** cyc — *a store-side memory-ordered op between cache-missing stores serializes them* (merge-buffer drain). At `hit`, `stlr` is statistically zero and fences keep only their pipeline floor.
@@ -293,7 +292,7 @@ at the dramatic endpoints (uncontended = Δ/iteration at N=64; contended = Δ/op
 | `swp` | 13.28 → 150.03 cyc (4.126 → 46.584 ns) | **13.47 → 153.56 cyc (4.186 → 47.656 ns)** | ordered ≈ baseline at every T | PASS ✓ |
 | `cas` | 20.00 → 512.70 cyc (6.210 → 159.070 ns) | **20.00 → 512.67 cyc (6.210 → 159.070 ns)** | ordered ≈ baseline at every T | PASS ✓ |
 
-The ordering suffix is ≈0 everywhere — even on a contended RMW**: an LSE RMW already owns the
+The ordering suffix is ≈0 everywhere — **even on a contended RMW**: an LSE RMW already owns the
 line, so it has already serialized; what contention scales is the **relaxed RMW itself** (base
 column). Per paper §4.4 an atomic's *directional* ordering cost follows the store-release /
 load-acquire rules — measured in **Group 1** / **Group 3**, not re-measured here.
@@ -301,6 +300,7 @@ load-acquire rules — measured in **Group 1** / **Group 3**, not re-measured he
 ≈0 at the same cell; see the group Verdict.) Report: [`4_atomics/README.md`](4_atomics/README.md)
 · data: [`processed/4_atomics_incremental.csv`](4_atomics/processed/4_atomics_incremental.csv) +
 [`_contention/out/contention.csv`](4_atomics/_contention/out/contention.csv).
+
 ---
 
 ## 7. Reproduce
