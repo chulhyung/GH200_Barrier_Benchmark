@@ -3,8 +3,6 @@
 > Companion to the top-level report [`README.md`](README.md) (headline contract + results
 > overview) and the per-group reports (`<group>/README.md`, per-treatment detail). This
 > document is the **normative spec**: how every number is measured, gated, and iterated.
-> Backs the ARM-CPU evaluation for the TEMPO paper (`../docs/main.pdf`, MICRO 2026) —
-> ordering-instruction cost on a conventional Release-Consistency core.
 
 The suite has **two measurement families**, so this doc is organized **common → A → B**:
 the model/platform/gates/iteration that apply to everything come first (§1–6), then the
@@ -28,10 +26,9 @@ two families that differ in stream, axis, gate, and what they report.
 
 *Common (back-matter):*
 9. [Reproduction & provenance](#9-reproduction--provenance)
-10. [Anticipated reviewer questions](#10-anticipated-reviewer-questions)
-11. [Caveats](#11-caveats)
-12. [Open gaps](#12-open-gaps)
-13. [Cross-references](#13-cross-references)
+10. [Caveats](#10-caveats)
+11. [Open gaps](#11-open-gaps)
+12. [Cross-references](#12-cross-references)
 
 ---
 
@@ -140,7 +137,7 @@ Machine (full table in [`metadata/env_summary.md`](metadata/env_summary.md)):
 | Core pinning | `taskset`/`sched_setaffinity` to a fixed core (0 for single-thread; core0+t for contention) | thread migration scrambles L1/L2 state and the PMU (which is per-core). Gate requires `cpu-migrations = 0`. |
 | Memory binding | `numactl --membind=0` | keep all benchmark memory in Grace local DRAM; node 1 is Hopper HBM — would change latency. |
 | Compiler | gcc 11.4.0, `-O2 -march=native -pthread` | fixes codegen; the emitted ordering opcode is then **objdump-verified** per treatment (not assumed). |
-| PMU access | `perf_event_open`, `exclude_kernel=1`, 6 generic counters (no multiplexing) | the `perf` CLI is broken on this kernel (§10 Q5); the syscall measures *only* the timed region. |
+| PMU access | `perf_event_open`, `exclude_kernel=1`, 6 generic counters (no multiplexing) | the `perf` CLI is broken on this kernel; the syscall measures *only* the timed region. |
 
 ---
 
@@ -452,51 +449,7 @@ python3 lib/parse_group.py 4_atomics
 
 ---
 
-## 10. Anticipated reviewer questions
-
-**Q1. Why register-hash store addressing instead of pointer-chasing?**
-We need the **store** to miss. Pointer-chasing makes the *chase load* miss while the store hits
-the chased line — the wrong observable. A register-only avalanche hash makes each store target a
-pseudo-random line (real miss, prefetcher-defeated) with **zero extra loads**, keeping the stream
-store-only (`mem_access/acc ≈ 2`).
-
-**Q2. Why measure the load-acquire completion stall under single-line contention, not single-thread?**
-This stall — paper Table 1, RC4: a load-acquire's completion held until the po-older store-release drains — needs (a) a po-older
-`stlr`, and (b) a slow drain to make the wait visible. Single-thread isolation with no po-older
-`stlr` reads `ldar ≈ ldapr ≈ 0` by construction. A single contended line makes the `stlr` drain
-slow (coherence) — the single-line-contention regime this group characterizes.
-
-**Q3. Why is the G4 atomic ordering surcharge ≈ 0 even under contention?**
-An LSE RMW already takes **exclusive ownership** of the line to perform the read-modify-write, so
-it has *already* serialized; the acquire/release annotation has nothing extra to enforce. The big
-cost (base RMW scaling with T) is paid by the `relaxed` baseline too, so the Δ ≈ 0. This contrasts
-with G3, where a *separate* `ldar` pays a large completion stall under the same contention.
-
-**Q4. Why paired (baseline + treatment in one process)?**
-Separate-process subtraction leaked cross-process steady-state drift (~±5 %) that swamped the
-tiny hit cost and produced spurious negatives. Pairing cancels per-invocation drift (§2, §6).
-
-**Q5. Why `perf_event_open` instead of `perf stat`?**
-The `perf` CLI is broken on this kernel (`kernel 6.8.0-1051-nvidia-64k`; the matching
-`linux-tools` package is absent, install needs root). The `perf_event_open` syscall works for the
-calling thread at `perf_event_paranoid=2` with `exclude_kernel=1`, and is *more* precise: it
-counts **only the timed region**, no process startup/teardown.
-
-**Q6. Why exclude_kernel=1 / user-mode only?**
-We want the instruction's own retirement/completion cost, not syscall/IRQ kernel time. The
-OS-noise gate (ctx-switches / migrations / page-faults = 0) confirms the region was kernel-quiet.
-
-**Q7. Isn't the contention rise just "more threads issue more stores in total"?**
-No. The PMU measures **only thread 0**, whose op count is fixed at 1M regardless of `T` — the
-helpers' issues enter neither the numerator nor the denominator of `cyc/op` (§8.2). The paired
-same-`T` baseline subtracts the generic traffic common to both phases. Two in-data controls
-confirm it: the G3 `ldar`/`ldapr` phases issue the **identical** instruction sequence at the same
-`T` yet differ 14× in Δ (semantics, not volume), and G4's ordering Δ stays ≈0 while its relaxed
-base explodes with `T` (a volume artifact would inflate that Δ too). Full argument: §8.2.
-
----
-
-## 11. Caveats
+## 10. Caveats
 
 - **`REMOTE_ACCESS` (0x31) ≈ 0** on single-socket Grace — it counts cross-socket traffic, of
   which there is none here. The coherence signal of record is therefore `L1D_REFILL/op` (rises
@@ -511,7 +464,7 @@ base explodes with `T` (a volume artifact would inflate that Δ too). Full argum
 
 ---
 
-## 12. Open gaps
+## 11. Open gaps
 
 - **Plots**: not generated — no `matplotlib` on the login node; the CSVs are plot-ready. Optional.
 - **Cross-socket / multi-NUMA contention**: out of scope (single Grace socket; `REMOTE_ACCESS`
@@ -521,7 +474,7 @@ base explodes with `T` (a volume artifact would inflate that Δ too). Full argum
 
 ---
 
-## 13. Cross-references
+## 12. Cross-references
 
 **TEMPO paper (`../docs/main.pdf`):**
 - §1 + Abstract — the three conventional costs: retirement backpressure, **drain-induced
@@ -545,5 +498,5 @@ generation).
 ---
 
 *Last updated: 2026-06-10. Structure: Common (§1–6) → Family A single-thread sweep (§7) → Family B
-single-line contention (§8) → back-matter (§9–13). Measurement snapshot: all 4 groups @ 1M iters;
+single-line contention (§8) → back-matter (§9–12). Measurement snapshot: all 4 groups @ 1M iters;
 G3/G4 single-line contention T=1/2/4/8, gate-clean.*
