@@ -1,4 +1,4 @@
-# barrierbench_extend — ARM memory-ordering cost on GH200 Neoverse-V2
+# barrierbench_extend
 
 Hardware microbenchmarks measuring the cost of memory-ordered instructions (`dmb`,
 `stlr`/`ldar`/`ldapr`, LSE atomics) on a conventional weak-memory ARM core.
