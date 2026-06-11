@@ -149,10 +149,6 @@ sections with objdump proof + build sha256 + gate + paired tables, plus a
 cross-treatment headline). `<group>/processed/<group>_incremental.csv` is the
 integrated table. **Machine-level** metadata (`metadata/`) is environment-only.
 
-Credible source of truth (per CLAUDE.md): **results** = group `processed/*.csv` +
-group `README.md`; **methodology** = the per-treatment `bench.c` + `run.sh` +
-`lib/`. Nothing in chat counts.
-
 ---
 
 ## 5. Directory layout
