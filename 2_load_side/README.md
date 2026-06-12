@@ -17,7 +17,7 @@
 
 ## At a glance
 
-Headline Δ of the memory-ordered op — the deepest sweep point (**`after_every` · N=64**), `miss` vs `hit`; values exactly as in the *Result* tables (per-iteration; the per-op equivalent `incr_cyc_op` is also in the CSV; `*` = within baseline margin). Full sweep below.
+Headline Δ of the memory-ordered op — the deepest sweep point (**`after_every` · N=64**), `miss` vs `hit`; values exactly as in the *Result* tables (per-iteration, `*` = within baseline margin). Full sweep below.
 
 ![At a glance: Δ per iteration at after_every·N=64, miss vs hit](plots/at_a_glance.svg)
 
@@ -98,7 +98,7 @@ Median baseline counters per condition — proof the intended cache state held. 
 
 *(Every individual baseline measurement — each treatment × placement × repeat — is preserved by condition × N in `processed/2_load_side_baselines.csv` for error-margin / CI work.)*
 
-All per-iteration **averages** (= total ÷ iters per repeat). (per-op `incr_cyc_op` also in the CSV) **Reference** = median over **all** pooled baseline samples for that condition×N — every treatment × placement × repeat (the **n** column below); **margin = furthest pooled sample from the reference** = max(|max−ref|, |ref−min|). **A treatment whose Δ ≤ this margin (or is negative) is statistically EQUAL to the baseline** — the apparent value is run-to-run fluctuation (within boundary), not a real cost. (σ = 1 standard deviation, for reference.)
+All per-iteration **averages** (= total ÷ iters per repeat). **Reference** = median over **all** pooled baseline samples for that condition×N — every treatment × placement × repeat (the **n** column below); **margin = furthest pooled sample from the reference** = max(|max−ref|, |ref−min|). **A treatment whose Δ ≤ this margin (or is negative) is statistically EQUAL to the baseline** — the apparent value is run-to-run fluctuation (within boundary), not a real cost. (σ = 1 standard deviation, for reference.)
 
 | condition | N | n | ref cyc | min–max cyc | σ cyc | **margin ±cyc** | ref ns | min–max ns | σ ns | **margin ±ns** |
 |---|---|---|---|---|---|---|---|---|---|---|

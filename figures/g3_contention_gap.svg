@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="610" height="546" viewBox="0 0 610 546" font-family="sans-serif">
+<rect width="610" height="546" fill="white"/>
+<text x="305" y="24" text-anchor="middle" font-size="16" font-weight="bold">G3 load-acquire completion stall vs contention (single shared line)</text>
+<text x="305" y="42" text-anchor="middle" font-size="11.5" fill="#444">Δ cyc/op (treatment − baseline) · T threads on distinct cores · 15 repeats (median) · T=1 = uncontended ref</text>
+<line x1="30" y1="60" x2="56" y2="60" stroke="#000000" stroke-width="1.8"/>
+<circle cx="43.0" cy="60.0" r="3.4" fill="#000000"/>
+<text x="61" y="63.5" font-size="11">ldar (RCsc) — pays the stall</text>
+<line x1="262.79999999999995" y1="60" x2="288.79999999999995" y2="60" stroke="#5a5a5a" stroke-width="1.8" stroke-dasharray="2,3"/>
+<polygon points="275.8,56.1 272.4,63.4 279.2,63.4" fill="#5a5a5a"/>
+<text x="293.79999999999995" y="63.5" font-size="11">ldapr (RCpc) — skips it</text>
+<line x1="84" y1="458.0" x2="574" y2="458.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="461.0" font-size="10" text-anchor="end" fill="#333">0</text>
+<line x1="84" y1="388.0" x2="574" y2="388.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="391.0" font-size="10" text-anchor="end" fill="#333">80</text>
+<line x1="84" y1="318.0" x2="574" y2="318.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="321.0" font-size="10" text-anchor="end" fill="#333">160</text>
+<line x1="84" y1="248.0" x2="574" y2="248.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="251.0" font-size="10" text-anchor="end" fill="#333">240</text>
+<line x1="84" y1="178.0" x2="574" y2="178.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="181.0" font-size="10" text-anchor="end" fill="#333">320</text>
+<line x1="84" y1="108.0" x2="574" y2="108.0" stroke="#e6e6e6" stroke-width="1"/>
+<text x="78" y="111.0" font-size="10" text-anchor="end" fill="#333">400</text>
+<line x1="84" y1="108" x2="84" y2="458" stroke="black" stroke-width="1.3"/>
+<line x1="84" y1="458" x2="574" y2="458" stroke="black" stroke-width="1.3"/>
+<text x="84.0" y="473.0" font-size="10.5" text-anchor="middle">1</text>
+<text x="247.3" y="473.0" font-size="10.5" text-anchor="middle">2</text>
+<text x="410.7" y="473.0" font-size="10.5" text-anchor="middle">4</text>
+<text x="574.0" y="473.0" font-size="10.5" text-anchor="middle">8</text>
+<text x="329.0" y="488.0" font-size="11.5" text-anchor="middle">T (threads contending on one line)</text>
+<text x="43" y="283.0" font-size="11.5" text-anchor="middle" transform="rotate(-90 43 283.0)">Δ cyc / op (ordering cost)</text>
+<path d="M84.0 443.9 L247.3 370.7 L410.7 283.7 L574.0 145.2" fill="none" stroke="#000000" stroke-width="1.7"/>
+<circle cx="84.0" cy="443.9" r="3.4" fill="#000000"/>
+<circle cx="247.3" cy="370.7" r="3.4" fill="#000000"/>
+<circle cx="410.7" cy="283.7" r="3.4" fill="#000000"/>
+<circle cx="574.0" cy="145.2" r="3.4" fill="#000000"/>
+<path d="M84.0 456.4 L247.3 451.7 L410.7 447.5 L574.0 434.9" fill="none" stroke="#5a5a5a" stroke-width="1.7" stroke-dasharray="2,3"/>
+<polygon points="84.0,452.5 80.6,459.8 87.4,459.8" fill="#5a5a5a"/>
+<polygon points="247.3,447.8 243.9,455.1 250.7,455.1" fill="#5a5a5a"/>
+<polygon points="410.7,443.6 407.3,450.9 414.1,450.9" fill="#5a5a5a"/>
+<polygon points="574.0,431.0 570.6,438.3 577.4,438.3" fill="#5a5a5a"/>
+<text x="30" y="538" font-size="9" fill="#666">GH200 ARM Neoverse-V2, 3.375 GHz fixed (1 cyc ≈ 0.296 ns), 1,000,000 iters/repeat; paired baseline+treatment; PMU via perf_event_open (user-mode); objdump-verified.</text>
+</svg>

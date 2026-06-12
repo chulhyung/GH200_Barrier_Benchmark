@@ -9,9 +9,9 @@ import os, re, csv, statistics as st, sys
 from bisect import bisect_left
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GROUPS = ["1_store_side","2_load_side","3_contention","4_atomics"]
-# not results: clock GHz, ns/cyc, mux gate, gcc, kernel, paper §labels
-ALLOW = {"3.375","0.296","0.999","11.4","6.8","4.1","4.4","4.5"}
+GROUPS = ["1_store_side","2_load_side","3_contention","4_atomics","5_release_serialization"]
+# not results: clock GHz, ns/cyc, mux gate (0.999), G5 ll-gate threshold (0.5), gcc, kernel, paper §labels
+ALLOW = {"3.375","0.296","0.999","0.5","11.4","6.8","4.1","4.4","4.5"}
 
 def load(p): return list(csv.DictReader(open(p))) if os.path.isfile(p) else []
 def fl(x):
@@ -22,6 +22,13 @@ def pool(g):
     vals=set()
     def add(v):
         if v is not None and v==v: vals.add(round(v,6)); vals.add(round(abs(v),6))
+    # G5 (5_release_serialization): the deliverable is a single CSV (no processed/ or per-treatment dirs).
+    # Every README number is a verbatim cell of it (base/treat/Δ in cyc+ns, l1/iter, stall, mux, miss, exp).
+    for r in load(f"{REPO}/{g}/out/release_serial.csv"):
+        n=fl(r.get("N"))
+        for v in r.values():
+            x=fl(v); add(x)
+            if x is not None and n: add(x/n)
     inc=load(f"{REPO}/{g}/processed/{g}_incremental.csv")
     for r in inc:
         n=fl(r.get("stores"))
@@ -65,6 +72,8 @@ def pool(g):
         for v in r.values():
             x=fl(v); add(x)
             if x is not None and n: add(x*n)
+    for r in load(f"{REPO}/{g}/prefetch_probe.csv"):  # focused lmiss/prefetch probe (Group 1)
+        for v in r.values(): add(fl(v))
     for d in sorted(os.listdir(f"{REPO}/{g}")):      # raw per-repeat
         for r in load(f"{REPO}/{g}/{d}/out/bench.csv"):
             it=fl(r.get("iters")); na=fl(r.get("n_access"))

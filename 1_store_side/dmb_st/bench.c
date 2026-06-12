@@ -8,12 +8,28 @@
  * PMU cycles + independent wall-time (CLOCK_MONOTONIC_RAW) + validity counters
  * (l1d/l2d refill, ll_miss_rd, mem_access, stall, mux, OS-noise). Outputs:
  *   out/bench.csv  — one row per repeat (base+treat cyc/ns + base validity counters)
- *   COMPARE line   — medians for run.sh -> out/compare_paired.csv: base & treat
- *                    cyc/iter, ns/iter, cyc/op, paired Δ, + base validity medians.
- * Store loop: register-hash store-only (one store per op, prefetcher-defeated).
+ *   COMPARE line   — medians for run.sh -> out/compare_paired.csv.
  *
- * usage: --fence-placement after_group|after_every --condition hit|miss --stores N
- *        --iters I --warmup W --repeats R [--working-set B] [--core C] [--csv P]
+ * Group-1 specifics (Pranith rerun):
+ *   - NOP PADDING: the no-ordering baseline carries a `nop` everywhere the treatment
+ *     carries the `dmb` (one per store for after_every, one at the group end for
+ *     after_group) so the two paths have the SAME instruction-slot count and Δ
+ *     isolates the fence's drain, not the extra instruction's decode cost.
+ *   - CROSS-ITERATION DEPENDENCY: each iteration's store line index is
+ *     hash(j ^ (dep>>6)), where `dep` is a byte offset reloaded once per iteration
+ *     from a RESIDENCY-MATCHED pointer chase (`dep = *(chase + dep)`, a single cycle
+ *     over a buffer the SAME SIZE as the store working set). The dependent miss-load
+ *     chain runs at the level's latency, so it is the loop bottleneck and SERIALIZES
+ *     iterations — neutralizing the cross-iteration store-MLP that otherwise lets the
+ *     OoO core run many iterations ahead. The N intra-iteration stores stay
+ *     INDEPENDENT (j varies per store) so the fence still has parallel stores to
+ *     serialize. NOT a pointer chase of the store stream itself. (The chase adds one
+ *     load/iter, so l1_refill/acc ~ 1 + 1/N at miss levels — recorded; the gate only
+ *     uses it to confirm "missed L1".)
+ *   - 4 cache-RESIDENCY conditions (l1/l2/l3/dram) via --condition + --working-set.
+ *
+ * usage: --fence-placement after_group|after_every --condition l1|l2|l3|dram|hit|miss
+ *        --stores N --iters I --warmup W --repeats R [--working-set B] [--core C] [--csv P]
  */
 #include "bench_common.h"
 #include "aarch64_ops.h"
@@ -24,30 +40,64 @@
 #define BENCH_GROUP   "store_side"
 enum { PLACE_GROUP = 1, PLACE_EVERY = 2 };
 
+/* One store to the dep-derived, hash-addressed line. `dep` (the byte offset from the
+ * prev iteration's chase load) puts each iteration's stores on the critical path of
+ * that load; `k` (via j) keeps the N stores WITHIN an iteration independent. */
 #define STORE_ONE                                                              \
     uint64_t j = i * stores + k;                                               \
-    size_t li = (size_t)bb_hash_idx(j, w->mask);                               \
+    size_t li = (size_t)bb_hash_idx(j ^ (dep >> 6), w->mask);                  \
     volatile uint64_t *slot = (volatile uint64_t *)(base + li*BB_CACHE_LINE);  \
     *slot = j ^ acc; acc += li; n++;
 
-static uint64_t pass_base(bb_workset_t *w, uint64_t iters, uint64_t stores, uint64_t *nout) {
-    uint64_t acc = 0, n = 0; char *base = (char *)w->buf.base;
-    for (uint64_t i = 0; i < iters; i++)
-        for (uint64_t k = 0; k < stores; k++) { STORE_ONE }
-    *nout = n; return acc;
-}
-static uint64_t pass_treat(bb_workset_t *w, uint64_t iters, uint64_t stores, int placement, uint64_t *nout) {
-    uint64_t acc = 0, n = 0; char *base = (char *)w->buf.base;
+#define DEP_NEXT() dep = load_plain_64((volatile uint64_t *)(chase + dep))
+
+static uint64_t pass_base(bb_workset_t *w, uint64_t iters, uint64_t stores, int placement,
+                          const char *chase, uint64_t *nout) {
+    uint64_t acc = 0, n = 0, dep = 0; char *base = (char *)w->buf.base;
     if (placement == PLACE_EVERY) {
-        for (uint64_t i = 0; i < iters; i++)
+        for (uint64_t i = 0; i < iters; i++) {
+            for (uint64_t k = 0; k < stores; k++) { STORE_ONE nop_pad(); }
+            DEP_NEXT();
+        }
+    } else {
+        for (uint64_t i = 0; i < iters; i++) {
+            for (uint64_t k = 0; k < stores; k++) { STORE_ONE }
+            nop_pad();
+            DEP_NEXT();
+        }
+    }
+    *nout = n; return acc + dep;
+}
+static uint64_t pass_treat(bb_workset_t *w, uint64_t iters, uint64_t stores, int placement,
+                           const char *chase, uint64_t *nout) {
+    uint64_t acc = 0, n = 0, dep = 0; char *base = (char *)w->buf.base;
+    if (placement == PLACE_EVERY) {
+        for (uint64_t i = 0; i < iters; i++) {
             for (uint64_t k = 0; k < stores; k++) { STORE_ONE TREAT_FENCE(); }
+            DEP_NEXT();
+        }
     } else {
         for (uint64_t i = 0; i < iters; i++) {
             for (uint64_t k = 0; k < stores; k++) { STORE_ONE }
             TREAT_FENCE();
+            DEP_NEXT();
         }
     }
-    *nout = n; return acc;
+    *nout = n; return acc + dep;
+}
+
+/* residency-matched dependency carrier: a single cache-line cycle over a buffer the
+ * same size as the store working set (so chase loads miss at the same level). */
+static char *make_chase(size_t bytes, uint64_t seed) {
+    bb_buf_t cb = bb_alloc(bytes);
+    size_t nl = bytes / BB_CACHE_LINE; if (!nl) nl = 1;
+    size_t *perm = (size_t *)malloc(nl * sizeof(size_t));
+    for (size_t i = 0; i < nl; i++) perm[i] = i;
+    bb_shuffle(perm, nl, seed);
+    for (size_t i = 0; i < nl; i++)
+        *(uint64_t *)((char *)cb.base + perm[i]*BB_CACHE_LINE) = (uint64_t)(perm[(i+1)%nl]*BB_CACHE_LINE);
+    free(perm);
+    return (char *)cb.base;   /* leaked intentionally: lives for the whole process */
 }
 
 #define CSV_HEADER \
@@ -67,9 +117,10 @@ int main(int argc, char **argv) {
     bb_pin_to_core(a.core);
     int placement = (!strcmp(a.fence_placement, "after_every")) ? PLACE_EVERY : PLACE_GROUP;
     bb_workset_t w = bb_workset_make(a.working_set, a.pattern, a.streams, a.seed);
+    char *chase = make_chase(a.working_set, a.seed ^ 0x5151ull);   /* residency-matched dep carrier */
     uint64_t dummy = 0, sink = 0;
-    if (a.warmup) { sink += pass_base(&w, a.warmup, a.stores?a.stores:1, &dummy);
-                    sink += pass_treat(&w, a.warmup, a.stores?a.stores:1, placement, &dummy); }
+    if (a.warmup) { sink += pass_base(&w, a.warmup, a.stores?a.stores:1, placement, chase, &dummy);
+                    sink += pass_treat(&w, a.warmup, a.stores?a.stores:1, placement, chase, &dummy); }
     bb_pmu_t pmu;
     if (bb_pmu_open(&pmu) != 0) { fprintf(stderr, "FATAL: PMU open failed\n"); return 2; }
     bb_thresholds_t th = bb_default_thresholds();
@@ -88,8 +139,8 @@ int main(int argc, char **argv) {
 
     for (int rep = 0; rep < R; rep++) {
         uint64_t nb=0, nt=0, t0, t1, bns, tns; bb_counts_t cb, ct; char rb[128], rt[128];
-        t0=bb_now_ns(); bb_pmu_start(&pmu); sink += pass_base(&w, a.iters, a.stores, &nb);            bb_pmu_stop(&pmu); t1=bb_now_ns(); bb_pmu_read(&pmu,&cb); bns=t1-t0;
-        t0=bb_now_ns(); bb_pmu_start(&pmu); sink += pass_treat(&w, a.iters, a.stores, placement, &nt); bb_pmu_stop(&pmu); t1=bb_now_ns(); bb_pmu_read(&pmu,&ct); tns=t1-t0;
+        t0=bb_now_ns(); bb_pmu_start(&pmu); sink += pass_base(&w, a.iters, a.stores, placement, chase, &nb);            bb_pmu_stop(&pmu); t1=bb_now_ns(); bb_pmu_read(&pmu,&cb); bns=t1-t0;
+        t0=bb_now_ns(); bb_pmu_start(&pmu); sink += pass_treat(&w, a.iters, a.stores, placement, chase, &nt); bb_pmu_stop(&pmu); t1=bb_now_ns(); bb_pmu_read(&pmu,&ct); tns=t1-t0;
         int gb = bb_gate_eval(a.condition, GATE_KIND, &cb, nb, &th, rb);
         int gt = bb_gate_eval(a.condition, GATE_KIND, &ct, nt, &th, rt);
         base_pass += gb; treat_pass += gt;

@@ -9,13 +9,14 @@ the **top-level report**: Abstract + methodology summary (→ [`METHODOLOGY.md`]
 ## Abstract
 
 - **What** — cost of ARM memory-ordered instructions on **Neoverse-V2** (`rg-uwing-1`, 3.375 GHz fixed), measured **paired** (baseline + treatment in one process), **1M iters × 10–15 repeats** median, PMU via `perf_event_open`, **objdump-verified**, **gate-clean**.
-- **G1 store-side** (miss · after_every · N=64, Δ per 64-store iteration): full `dmb` **+3401…+3858** > store-only `dmb` **+2381…+2400** ≳ store-release `stlr` **+2194** cyc — *a store-side memory-ordered op between cache-missing stores serializes them* (merge-buffer drain). At `hit`, `stlr` is statistically zero and fences keep only their pipeline floor.
+- **G1 store-side** (`after_every` · N=64, Δ per 64-store iteration, swept across **cache residency** `l1`→`dram`): the store-side drain **deepens with how deep the missing stores resolve** — full `dmb` **+622.4 → +3230.1** cyc (l1→dram) > store-only `dmb` **+161.3 → +1887.9** ≳ store-release `stlr` **−0.4\* → +1403.8** — *a store-side op between cache-missing stores serializes them* (merge-buffer drain; deeper miss ⇒ longer drain). At `l1` (resident) `stlr` is statistically zero and the fences keep only their ~pipeline floor.
 - **G2 load-side** (same point): `dmb` **+213.3…+213.5** cyc per 64-load iteration — a load barrier is far cheaper; load-MLP survives. Load-acquire `ldar`/`ldapr` are statistically **zero** in an isolated stream (no po-older `stlr` to wait on; contended cost is G3).
 - **G3 — load-acquire completion stall** (`3_contention`) · single-line contention: the **`ldar`−`ldapr` gap grows +14.34 → +92.56 → +187.16 → +331.19 cyc/op** at T=1→8 — RCsc `ldar` completion is gated on the po-older `stlr` drain (+16.15→+357.54); RCpc `ldapr` skips it (+1.81→+26.34).
 - **G4 atomics** · uncontended **and** single-line contention: ordering surcharge over `relaxed` **≈ 0** even at T=8 (worst **+3.54** cyc/op — the LSE RMW already owns the line); the cost is the RMW itself, `cas` 20.00→**488.20** > `ldadd` 13.38→**149.74** ≈ `swp` 13.28→**150.77** cyc/op (T=1→8).
-- **Status** — 4 groups measured @1M (10 rep single-thread / 15 rep contention); G1 +stlr, G2 +ldar/ldapr single-thread, G3/G4 contention T=1/2/4/8, all gate-clean. Full method → [`METHODOLOGY.md`](METHODOLOGY.md).
+- **G5 release serialization** (`5_release_serialization`, **Fig 4(a) baseline**) · paired STLR-vs-STR per iteration: a store-release after a cache-missing store **serializes the stream** (stalls retirement until the po-older store drains) — Var1 (`N` sweep) Δ rises off the N=1 floor to **+197.3 cyc/iter at N=64**; Var2 (N=64, `x` sweep) is **Δ ∝ x**, from ≈0/slightly-negative at the miss-saturated tail (x=1: −5.3 — a real PMU-confirmed stall-reduction, not noise) up to **+196.3** at x=62 (peak +215.4 at x=61). A plain `str` retires before draining → keeps MLP. (Fig 4(b) = TEMPO, gem5-only, not HW-measurable.)
+- **Status** — 5 groups measured @1M (10 rep single-thread / 15 rep contention); G1 +stlr, G2 +ldar/ldapr single-thread, G3/G4 contention T=1/2/4/8, G5 release-serialization Var1 N={1..64} + Var2 x={1..62}, all gate-clean. Full method → [`METHODOLOGY.md`](METHODOLOGY.md).
 
-> **Methodology** — full normative spec in **[`METHODOLOGY.md`](METHODOLOGY.md)** (§1–13, common → Family A → Family B). Gate-spec
+> **Methodology** — full normative spec in **[`METHODOLOGY.md`](METHODOLOGY.md)** (§1–13, common → single-thread G1/G2 → contention G3/G4 → release-serialization G5). Gate-spec
 > origin: `../docs/measurement_and_gates.md`. Findings/forensics: `../docs/findings_*.md`.
 > Progress: `../docs/To-Do List.txt`.
 
@@ -65,7 +66,8 @@ Captured 2026-06-08 from `rg-uwing-1` via `srun --jobid=<J>`; raw files in
 ## 3. Methodology summary
 
 The full normative spec is **[`METHODOLOGY.md`](METHODOLOGY.md)** (§1–13), organized **common →
-Family A → Family B**. This is the headline **contract**.
+single-thread sweep (Group 1 / Group 2) → single-line contention (Group 3 / Group 4) →
+release-serialization microbench (Group 5)**. This is the headline **contract**.
 
 **Common to all groups.** Each treatment times its no-ordering **baseline** and the **treatment**
 *interleaved in ONE process per repeat*; `incremental = median(treat − base)` — cancels the
@@ -73,32 +75,35 @@ per-invocation drift that made an earlier separate-process design read spurious 
 (METHODOLOGY.md §2, §6). Reported in **both** cyc/op (PMU `perf_event_open`, user-mode, no
 multiplexing) and ns (`CLOCK_MONOTONIC_RAW`), per-iteration averages, **median ± margin** (§3),
 **1,000,000 iters/repeat**. Every repeat passes the **common gate** — multiplexing / OS-noise /
-anti-elision — plus an **objdump** opcode proof (§5). The suite is **two measurement families**
-that differ in stream, swept axis, family gate, and what each reports:
+anti-elision — plus an **objdump** opcode proof (§5). The suite is **two measurement regimes**
+(single-thread vs single-line contention) that differ in stream, swept axis, gate, and what each reports:
 
-### Family A — single-thread ordering sweep (G1/G2) · METHODOLOGY §7
+### Single-thread sweep — Group 1 (store-side) & Group 2 (load-side) · METHODOLOGY §7
 
-A store-side or load-side memory-ordered op in a single-thread stream — **the reported measurement for
-G1/G2**, grouped by **measurement window** (the paper's store-side / load-side split, Fig 4 / Fig 5):
+A memory-ordered op in a single-thread stream — **the reported measurement for G1/G2**, grouped by
+**measurement window** (the paper's store-side / load-side split, Fig 4 / Fig 5). The two groups
+**differ in the cache axis**: **Group 1 sweeps cache residency (L1/L2/L3/DRAM)**; **Group 2 uses hit/miss**.
 
 | dimension | values | what it is |
 |---|---|---|
-| stream | G1 store-only · G2 load-MLP (register-hash, prefetcher-defeated) | the measured op (§7.1) |
+| stream | G1 store-only · G2 load-MLP (register-hash, prefetcher-defeated) | the measured op (§7.1/§7.2) |
 | memory-ordered op | G1: `dmb ish/sy/ishst/st` + **`stlr`** (STLR vs STR) · G2: `dmb ish/sy/ishld/ld` + **`ldar`/`ldapr`** (LDAR vs LDR vs LDAPR) | fence vs instruction-carried release/acquire |
-| condition | `hit` · `miss` | cache-resident vs prefetcher-defeated real miss |
-| placement × N | `after_group`/`after_every` × N ∈ {0,1,2,4,8,16,32,64} | memory-ordered-op frequency × merge-buffer pressure |
+| cache axis | **G1: residency L1/L2/L3/DRAM** · **G2: hit/miss** | how deep the missing accesses resolve |
+| placement × N | `after_group`/`after_every` × N ∈ {1,2,4,8,16,32,64} | memory-ordered-op frequency × merge-buffer pressure |
 | repeats | **10** (× 2 placements = 20-sample pooled baseline) | median ± margin |
-| + family gate | cache hit/miss + exposed-latency (§7.3) | proves the cache state / a real exposed miss |
+| + gate | G2/endpoints: cache hit/miss + exposed-latency (§7.4) · G1 L2/L3: latency-distribution (§7.1) | proves the cache state / a real exposed miss |
 
 | group | measures | window |
 |---|---|---|
-| **G1 store-side** (`1_store_side`) | a `dmb` **or store-release `stlr`** in a cache-missing **store** stream | store issue → **retire** (drain-induced stall) |
-| **G2 load-side** (`2_load_side`) | a `dmb` **or load-acquire `ldar`/`ldapr`** in a **load** stream | load issue → **completion** (load-MLP survives) |
+| **G1 store-side** (`1_store_side`) | a `dmb` **or store-release `stlr`** in a cache-missing **store** stream, swept across **cache residency** | store issue → **retire** (drain-induced stall) |
+| **G2 load-side** (`2_load_side`) | a `dmb` **or load-acquire `ldar`/`ldapr`** in a **load** stream (hit/miss) | load issue → **completion** (load-MLP survives) |
+
+**Group 1 cache-residency** (Pranith's L1-missing/L2-resident & L2-missing/L3-resident request): working sets **2 KiB → L1, 512 KiB → L2, 8 MiB → L3, 512 MiB → DRAM**, validated on-node by per-access latency (~4 / 11 / 21 / 650 cyc — [`tools/cache_residency.c`](tools/cache_residency.c)). Note the "L3" is the **72-core-shared SLC outside the core**, so the core "miss" counters (`l3d_refill`/`ll_miss_rd`) read **≈1 at the L3-resident 8 MiB** = "left the core's L1/L2", **not** "went to DRAM" (latency there is 21 cyc, not ~650) — residency is therefore read from **per-access latency + its DRAM-tail distribution**, not from a mean or a miss counter (full rationale + averaging-pitfall analysis: METHODOLOGY §7.1).
 
 (`ldar`/`ldapr` in an *isolated* load stream read ≈0 — no po-older `stlr` to wait on; that is the
-finding that **uncontended** acquire is cheap. The **contended** cost is Family B / G3.)
+finding that **uncontended** acquire is cheap. The **contended** cost is G3.)
 
-### Family B — single-line contention sweep (G3/G4) · METHODOLOGY §8
+### Single-line contention — Group 3 & Group 4 · METHODOLOGY §8
 
 All `T` threads hammer **one shared line** — **`T=1` uncontended → `T≥2` contended.** This is the
 reported measurement for **G3** (load-acquire `ldar` vs `ldapr` under contention) and one of two
@@ -112,17 +117,41 @@ lives in G1/G2, not here.)*
 | regime (axis) | **`T=1` uncontended → `T≥2` contended** (T ∈ {1,2,4,8}) | how contention scales the cost |
 | order (G4) | `relaxed` (baseline) · acquire/release/acq_rel/seq_cst | the ordering surcharge |
 | repeats | **15 / run** | median ± margin (the `n=15` baselines) |
-| + family gate | distinct-core pin + temporal overlap + L1-refill rise (§8.3) | proves the threads truly raced on the line |
+| + gate | distinct-core pin + temporal overlap + L1-refill rise (§8.3) | proves the threads truly raced on the line |
 
 | group | measures | window |
 |---|---|---|
 | **G3 contention** (`3_contention`) | **`ldar` vs `ldapr`** on the contended line (`stlr(L);ldar/ldapr(L)`) | **load-acquire completion stall** (RCsc `ldar` pays, RCpc `ldapr` skips) |
 | **G4 atomics** (`4_atomics`) | LSE `ldadd`/`swp`/`cas` × order — uncontended **and** on the contended line | atomic issue → **completion** (RMW cost + ordering surcharge) |
 
+### Release-serialization microbench — Group 5 · METHODOLOGY §9
+
+A store-release `stlr` placed immediately after a **cache-missing store** — the paper's **Figure 4(a)
+baseline**. One thread, a mixed hit/miss store stream, **paired `str` (baseline) vs `stlr`
+(treatment)**, swept two ways. The release stalls retirement until the po-older store drains,
+serializing the stream; `str` retires first and keeps MLP. *(The single-thread `stlr` cost across
+cache residency in a pure store stream is G1; G5 isolates the exact Fig-4 mixed-stream scenario.)*
+
+| dimension | values | what it is |
+|---|---|---|
+| construction | `[MISS] [rel] [HIT×x] [MISS×(N−2−x)]`, register-hash miss addressing, **independent iterations** (no chase), persistent `gmc`, **per-repeat warm + ping-pong order** (symmetry) | the Fig-4 scenario (§9.1) |
+| baseline / treatment | plain `str` / store-release `stlr` at store **position 1** | STLR vs STR — Δ = the release's serialization |
+| axis | **Var1**: `N ∈ {1,2,4,8,16,32,64}` · **Var2**: `N=64`, `x ∈ 1..62` | release vs N · release vs tail-miss count (§9.2) |
+| repeats | **15 / run** (R≥10), 1M iters | median ± **margin** (`*` = within noise) |
+| + gate | `l1/iter ≈ miss_count` + `ll/iter ≥ 0.5·miss` + `mux ≥ 0.999`; **no stall gate** (str hides the miss via MLP) (§9.3) | proves the mixed stream; str's low stall is intended, not gated |
+
+| group | measures | window |
+|---|---|---|
+| **G5 release serialization** (`5_release_serialization`) | a store-release `stlr` after one cache-missing store, STLR vs STR (Var1 N-sweep + Var2 x-sweep) | store issue → **retire** (drain-induced retirement stall; `str` keeps MLP) |
+
+**Both variations are the Figure 4(a) baseline** (conventional hardware); Figure 4(b) is *with TEMPO*,
+a gem5-only microarchitecture, **not** hardware-measurable.
+
 **Where the depth lives** (METHODOLOGY.md): common — §2 paired · §3 numbers · §4 platform · §5
-common gates · §6 iteration & method-evolution; **Family A** — §7 (sweep + gate + windows);
-**Family B** — §8 (contention + gate + run-sets + windows); back-matter — §9
-reproduce · §10 reviewer Q&A.
+common gates · §6 iteration & method-evolution; **single-thread (G1/G2)** — §7 (sweep + gate + windows);
+**contention (G3/G4)** — §8 (contention + gate + run-sets + windows); **release-serialization (G5)** —
+§9 (construction + axis + gate + run-sets + windows); back-matter — §10 reproduce · §11 caveats ·
+§12 open gaps · §13 cross-references.
 
 ---
 
@@ -156,12 +185,13 @@ integrated table. **Machine-level** metadata (`metadata/`) is environment-only.
 ```
 barrierbench_extend/
 ├── README.md                   # this master document (TL;DR + summary + results overview)
-├── METHODOLOGY.md              # normative methodology & validation spec (§1-13: common → Family A → Family B)
+├── METHODOLOGY.md              # normative methodology & validation spec (§1-13: common → single-thread G1/G2 → contention G3/G4 → release-serialization G5)
 ├── lib/                        # SHARED ONLY — primitives + helpers (no run-all)
 │   ├── bench_common.h          #   alloc/prefault/mlock, register-hash gen, PMU group, gates, CLI/CSV
 │   ├── aarch64_ops.h           #   dmb*/str/ldr/stlr/ldar/ldapr/LSE-atomic inline asm
 │   ├── run_common.sh           #   pin/membind + paired-bench invoker (sourced by each run.sh)
-│   ├── parse_group.py          #   aggregate a group's out/compare_paired.csv -> processed + README
+│   ├── parse_group.py          #   aggregate a group's out/compare_paired.csv -> processed + README (G1-G4)
+│   ├── parse_g5.py             #   generate 5_release_serialization/README.md + plots from out/release_serial.csv (G5)
 │   └── collect_env.sh          #   machine/env capture -> metadata/
 ├── 1_store_side/               # GROUP 1 — store-side ordering (dmb + store-release) on a STORE stream
 │   ├── dmb_ish/                #   one TREATMENT = self-contained
@@ -180,6 +210,12 @@ barrierbench_extend/
 ├── 4_atomics/                  # GROUP 4 — LSE atomics × memory order (uncontended + contended)
 │   ├── ldadd/ swp/ cas/                       each {bench.c, run.sh, out/}  + README.md processed/  (uncontended sweep)
 │   └── _contention/            #   multi-thread contended RMW: bench.c, run.sh, out/contention.csv
+├── 5_release_serialization/    # GROUP 5 — store-release serialization (Fig 4a baseline): stlr after a cache-missing store
+│   ├── bench.c                 #   standalone PAIRED bench (str baseline vs stlr treatment, one process)
+│   ├── run.sh                  #   build + objdump + sweep Var1 (N) & Var2 (x) -> out/release_serial.csv
+│   ├── out/                    #   release_serial.csv (the deliverable) run.log objdump.full/.snippet
+│   ├── README.md               #   GROUP report (auto-generated by lib/parse_g5.py)
+│   └── plots/                  #   var1.svg var2.svg (at-a-glance)
 ├── metadata/                   # MACHINE/ENV ONLY: env_*.txt, env_summary.md
 └── tools/                      # rerun_all.sh (full re-measure) + ab_compare.c (paired probe) + selftest/sanity/prefetch probes
 ```
@@ -203,25 +239,33 @@ Opcode emit (objdump, gcc 11.4 `-O2 -march=native`): `dmb ish/ishst/ishld/sy/st/
 without SIGILL. Gate self-test (`logs/gate_selftest.log`): miss→l1_refill/acc=1.00,
 hit→0.00, prefetched→auto-FAIL, no multiplexing, zero OS noise.
 
-### 6.1 Group 1 — store-side ordering (fences + store-release)  ✅ (140/140 gate-clean)
+### 6.1 Group 1 — store-side ordering (fences + store-release)  ✅ (280/280 gate-clean)
 
-Δ per iteration of 64 stores, at the deepest sweep point (after_every · N=64):
+Per-iteration cost of 64 stores, at the deepest sweep point (after_every · N=64), swept across **cache
+residency** (`l1` 2 KiB / `l2` 512 KiB / `l3` 8 MiB / `dram` 512 MiB — latency-validated, iterations
+serialized by a residency-matched dependency so the baseline reflects per-iteration cost):
 
-![G1 at a glance: Δ per iteration at after_every·N=64, miss vs hit](1_store_side/plots/at_a_glance.svg)
+![G1 at a glance: baseline vs memory-ordered per iteration at after_every·N=64, by cache residency](1_store_side/plots/at_a_glance.svg)
 
-| memory-ordered instruction | **Δ `miss`** (after_every·N=64) | **Δ `hit`** | gate |
-|---|---|---|---|
-| `dmb_ish` | +3401.3 cyc (+1056.1 ns) | +621.5 cyc (+192.8 ns) | PASS ✓ |
-| `dmb_sy` | +3857.6 cyc (+1197.5 ns) | +622.3 cyc (+193.0 ns) | PASS ✓ |
-| `dmb_ishst` | +2380.7 cyc (+739.4 ns) | +177.6 cyc (+55.1 ns) | PASS ✓ |
-| `dmb_st` | +2400.3 cyc (+745.3 ns) | +181.2 cyc (+56.2 ns) | PASS ✓ |
-| `stlr` | +2193.7 cyc (+681.4 ns) | +5.2* cyc (+1.6* ns) | PASS ✓ |
+Absolute per-iteration cost, cyc (ns): first row = **baseline** (no memory-ordered op), each treatment
+row = the cost **with** that op (= baseline + its Δ). `*` = statistically equal to baseline (no
+measurable cost). The per-op incremental Δ is in the group report's *Result* tables.
+
+| memory-ordered instruction | **`l1`** | **`l2`** | **`l3`** | **`dram`** | gate |
+|---|---|---|---|---|---|
+| baseline, no op | 219.6 cyc (68.1 ns) | 234.2 cyc (72.9 ns) | 357.3 cyc (111.0 ns) | 1085.3 cyc (337.3 ns) | — |
+| `dmb_ish` | 842.0 cyc (261.1 ns) | 864.5 cyc (268.4 ns) | 1326.0 cyc (411.6 ns) | 4315.4 cyc (1339.8 ns) | PASS ✓ |
+| `dmb_sy` | 844.2 cyc (261.8 ns) | 856.5 cyc (266.0 ns) | 1314.2 cyc (407.8 ns) | 4310.4 cyc (1338.2 ns) | PASS ✓ |
+| `dmb_ishst` | 380.9 cyc (118.2 ns) | 413.4 cyc (128.5 ns) | 760.7 cyc (236.1 ns) | 2973.1 cyc (923.3 ns) | PASS ✓ |
+| `dmb_st` | 380.9 cyc (118.1 ns) | 428.4 cyc (133.1 ns) | 766.8 cyc (238.0 ns) | 2966.4 cyc (921.1 ns) | PASS ✓ |
+| `stlr` | 219.2* cyc (68.0* ns) | 233.9* cyc (72.8* ns) | 700.2 cyc (217.3 ns) | 2489.0 cyc (773.0 ns) | PASS ✓ |
 
 A store-side instruction between cache-missing stores **serializes them** (merge-buffer drain
-before retirement; the per-instruction share is Δ ÷ 64 — full sweep in the group report); at
-`hit` only the pipeline floor remains (`stlr` statistically zero) — **the cost is the pending
-drain, not the instruction**. Ranking full > store-only ≳ `stlr`. Report:
-[`1_store_side/README.md`](1_store_side/README.md) · data:
+before retirement; the per-instruction share is Δ ÷ 64 — full sweep in the group report). The drain
+cost **deepens with cache residency** (`l1`→`dram`): the deeper the missing stores resolve, the
+longer the fence waits. At `l1` (resident) only the ~pipeline floor remains (`stlr` statistically
+zero) — **the cost is the pending drain, not the instruction**. Ranking full > store-only ≳ `stlr`.
+Report: [`1_store_side/README.md`](1_store_side/README.md) · data:
 [`processed/1_store_side_incremental.csv`](1_store_side/processed/1_store_side_incremental.csv).
 
 ### 6.2 Group 2 — load-side ordering (fences + load-acquire)  ✅ (168/168 gate-clean)
@@ -297,6 +341,57 @@ load-acquire rules — measured in **Group 1** / **Group 3**, not re-measured he
 ≈0 at the same cell; see the group Verdict.) Report: [`4_atomics/README.md`](4_atomics/README.md)
 · data: [`processed/4_atomics_incremental.csv`](4_atomics/processed/4_atomics_incremental.csv) +
 [`_contention/out/contention.csv`](4_atomics/_contention/out/contention.csv).
+
+### 6.5 Group 5 — release serialization (Fig 4 baseline) (`5_release_serialization`)  ✅ (69/69 gate-clean)
+
+Real-hardware evidence for the paper's **Figure 4(a) baseline**: a store-release `stlr` preceded by a
+cache-missing store **stalls retirement until that po-older store drains**, serializing the stream; a
+plain `str` retires first and keeps memory-level parallelism (MLP). Per-iteration `cyc/iter`, median
+over 15 repeats, paired **`str` (baseline) vs `stlr` (treatment)**; **Δ = stlr − str**. Both variations
+are the 4(a) **baseline** (4(b) = TEMPO, gem5-only, not HW-measurable).
+
+**Variation 1 — `N` sweep** (per iter = `[MISS] [rel] [HIT×(N−2)]`; `N=1` = single MISS, no release → floor):
+
+![G5 Var1 at a glance: str vs stlr per iteration, by N](5_release_serialization/plots/var1.svg)
+
+| N | `str` (base) | `stlr` (treat) | **Δ = stlr−str** | gate |
+|---|---|---|---|---|
+| 1 | 12.8 cyc (4.0 ns) | 12.8 cyc (4.0 ns) | **-0.0*** cyc (**-0.0*** ns) | PASS ✓ |
+| 2 | 18.5 cyc (5.8 ns) | 38.1 cyc (11.8 ns) | **+19.5** cyc (**+6.1** ns) | PASS ✓ |
+| 4 | 27.3 cyc (8.5 ns) | 59.0 cyc (18.3 ns) | **+31.6** cyc (**+9.8** ns) | PASS ✓ |
+| 8 | 38.4 cyc (12.0 ns) | 120.5 cyc (37.4 ns) | **+82.0** cyc (**+25.5** ns) | PASS ✓ |
+| 16 | 50.4 cyc (15.7 ns) | 249.0 cyc (77.3 ns) | **+198.7** cyc (**+61.6** ns) | PASS ✓ |
+| 32 | 69.7 cyc (21.7 ns) | 240.7 cyc (74.7 ns) | **+170.9** cyc (**+53.0** ns) | PASS ✓ |
+| 64 | 133.1 cyc (41.4 ns) | 330.4 cyc (102.5 ns) | **+197.3** cyc (**+61.2** ns) | PASS ✓ |
+
+**Variation 2 — `x` sweep** (`N=64`, per iter = `[MISS] [rel] [HIT×x] [MISS×(62−x)]`, block; representative points — full 62-row sweep in the group report):
+
+![G5 Var2 at a glance: str vs stlr per iteration, by x (N=64)](5_release_serialization/plots/var2.svg)
+
+| x | `str` (base) | `stlr` (treat) | **Δ = stlr−str** | gate |
+|---|---|---|---|---|
+| 1 | 778.8 cyc (242.2 ns) | 773.5 cyc (240.5 ns) | **-5.3** cyc (**-1.6** ns) | PASS ✓ |
+| 2 | 777.8 cyc (241.8 ns) | 770.8 cyc (239.7 ns) | **-7.0** cyc (**-2.1** ns) | PASS ✓ |
+| 4 | 772.6 cyc (240.3 ns) | 765.5 cyc (238.0 ns) | **-7.1** cyc (**-2.3** ns) | PASS ✓ |
+| 8 | 768.9 cyc (239.1 ns) | 768.1 cyc (238.9 ns) | **-0.8** cyc (**-0.2** ns) | PASS ✓ |
+| 16 | 750.2 cyc (233.3 ns) | 765.0 cyc (237.8 ns) | **+14.8** cyc (**+4.5** ns) | PASS ✓ |
+| 32 | 724.3 cyc (225.2 ns) | 743.5 cyc (231.2 ns) | **+19.2** cyc (**+6.0** ns) | PASS ✓ |
+| 48 | 540.8 cyc (168.1 ns) | 598.3 cyc (185.9 ns) | **+57.5** cyc (**+17.8** ns) | PASS ✓ |
+| 62 | 133.1 cyc (41.4 ns) | 329.3 cyc (102.2 ns) | **+196.3** cyc (**+60.9** ns) | PASS ✓ |
+
+The release serializes the stream: Var1 Δ **rises off the N=1 floor as N grows** (more cross-iteration
+MLP for the release to destroy) to **+197.3 cyc/iter at N=64** (peak +198.7 at N=16); Var2 (N=64) is
+**Δ ∝ x** — rising from ≈0 at the miss-saturated tail toward its max as the tail loses misses
+(x=62: +196.3; peak +215.4 at x=61), because the po-younger trailing misses drain *during* the
+release's retirement stall (it orders po-*older* stores) and so raise the baseline rather than being
+serialized — an intentional direction (confirmed with the team). **At the most-saturated floor (low x)
+Δ is slightly negative** (x=1..4: −5 to −7 cyc) — a real, PMU-confirmed effect, **not** an artifact:
+at identical cache traffic the release *reduces* backend-memory stall by throttling store run-ahead
+(`treat stall < base stall`; invariant to warm flavor/presence and pass order —
+[`floor_probe.csv`](5_release_serialization/out/floor_probe.csv)). Measurement symmetry (per-repeat
+warm + ping-pong order) is hardened so this is not a first-mover bias. Report:
+[`5_release_serialization/README.md`](5_release_serialization/README.md) · data:
+[`out/release_serial.csv`](5_release_serialization/out/release_serial.csv) · method: [`METHODOLOGY.md`](METHODOLOGY.md) §9.
 
 ---
 

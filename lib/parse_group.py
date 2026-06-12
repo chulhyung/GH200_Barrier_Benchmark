@@ -33,7 +33,7 @@ META = {
    intro="a store-side memory-ordered instruction inserted into a **store** stream — a `dmb` barrier (full `dmb ish`/`sy`, store-only `dmb ishst`/`st`) **or a store-release `stlr`** (STLR vs STR)",
    window="store issue → retire (a retiring fence — or a store-release — blocks until po-older stores drain from the merge/write buffer)",
    stream="random **store-only** (register-hash addressing ⇒ one store per op, write-allocate misses, prefetcher-defeated)",
-   glance_take="A store-side fence between cache-missing stores **serializes** them — full (`ish`/`sy`) > store-only (`ishst`/`st`), cost grows ~linearly with N (merge-buffer drain); at `hit` it is ≈0 (nothing to drain). Store-release `stlr` pays the **same store-side drain** — its retirement waits on the po-older stores — measured here as STLR vs STR.",
+   glance_take="A store-side fence between cache-missing stores **serializes** them — full (`ish`/`sy`) > store-only (`ishst`/`st`), cost grows ~linearly with N (merge-buffer drain) and **deepens with cache residency** (`l1`→`dram`: the deeper the missing stores resolve, the more drain the fence exposes); at `l1` (resident) it is ≈0 (nothing to drain). Store-release `stlr` pays the **same store-side drain** — its retirement waits on the po-older stores — measured here as STLR vs STR.",
    paper="**Paper claim this measures** — *\"the ordering requirements of full fences and "
      "store-release instructions are commonly enforced by **draining older stores before "
      "retirement, which stalls commit**\"* (paper §1), illustrated by the Fig 4 walk-through: "
@@ -43,12 +43,13 @@ META = {
      "measures that drain-induced stall directly: the Δ of a store-side `dmb` / `stlr` placed in "
      "a cache-missing store stream.",
    summary_st=[
-     "**`dmb_ish` / `dmb_sy`** (full) — the `miss` growth is the **merge-buffer drain**: a fence "
-       "cannot retire until every outstanding missing store ahead of it has drained, so each fence "
-       "waits longer the more misses are in flight — the stores execute serially instead of in "
-       "parallel. At `hit` there is nothing to drain, so only the fence's own fixed pipeline "
-       "latency remains; in `after_group` even that disappears once the group is long enough to "
-       "overlap it.",
+     "**`dmb_ish` / `dmb_sy`** (full) — the cost is the **merge-buffer drain**: a fence cannot "
+       "retire until every outstanding missing store ahead of it has drained, so each fence waits "
+       "longer the more misses are in flight — the stores execute serially instead of in parallel. "
+       "The Δ **deepens with residency** (`l1`→`dram`): the deeper the stores resolve, the longer "
+       "the drain. At `l1` (resident) there is nothing to drain, so only the fence's own fixed "
+       "pipeline latency remains; in `after_group` even that disappears once the group is long "
+       "enough to overlap it.",
      "**`dmb_ishst` / `dmb_st`** (store-only) — same drain mechanism, but cheaper than full: a "
        "store-only barrier orders only the store stream, so it destroys less of the surrounding "
        "parallelism. The `ishst`-vs-`st` scope difference is negligible — the load/store "
@@ -60,38 +61,24 @@ META = {
        "to wait for. A publish at the end of a write burst is nearly free.",
      "**Overall** — the cost ordering full > store-only ≳ `stlr` is the ordering-strength "
        "ordering: the more the instruction forbids, the more store-MLP it serializes. And the "
-       "`hit`-vs-`miss` contrast shows the cost lives in the **pending drain**, not in the "
-       "instruction itself.",
+       "**residency gradient** (`l1`→`dram`) shows the cost lives in the **pending drain** (deeper "
+       "miss ⇒ longer drain), not in the instruction itself.",
    ],
    align_st="**Claim** (paper §1): *\"the ordering requirements of full fences and store-release "
      "instructions are commonly enforced by **draining older stores before retirement, which "
      "stalls commit**\"* — and the Fig 4 walk-through (paper §3.2): *\"S2 cannot retire until the "
      "merge-buffer entry of po-older store S1 drains.\"*\n\n"
-     "**Measured**: exactly that signature (table above) — at `miss` the per-op cost of every "
-     "store-side `dmb` and of `stlr` **rises with the number of outstanding missing stores** and "
-     "collapses to the small flat pipeline floor at `hit`, where there is nothing to drain.\n\n"
+     "**Measured**: exactly that signature (table above) — at the miss levels the per-op cost of "
+     "every store-side `dmb` and of `stlr` **rises with the number of outstanding missing stores** "
+     "and **deepens with cache residency** (`l1`→`dram`), collapsing to the small flat pipeline "
+     "floor at `l1` (resident), where there is nothing to drain.\n\n"
      "**Alignment**: **directly confirms** the drain-induced retirement stall on real Neoverse-V2 "
-     "hardware — both the direction (store-side, drain-bound; release ≈ store fence) and the "
-     "scaling (cost grows with merge-buffer pressure N).",
+     "hardware — the direction (store-side, drain-bound; release ≈ store fence), the scaling (cost "
+     "grows with merge-buffer pressure N), and the **residency dependence** (drain cost grows with "
+     "how deep the missing stores resolve).",
    treat_notes={
      "stlr":"**Store-release (`stlr`), STLR vs STR** — the ordered store is emitted as `stlr` instead of `str`. It pays the **same store-side drain as a store-side `dmb`**: the release store's retirement is held until po-older stores drain the merge/write buffer, so its cost rises with the number of cache-missing stores ahead of it (`after_every`) and is hidden behind a long group (`after_group`, large N). The **directional** cost of an acquire/release atomic follows this same `stlr` rule (paper §4.4).",
-   },
-   verdict="""### Why `hit` + `after_group` ≈ baseline (and why small N is the exception)
-
-At `hit`, a full fence (`dmb ish`) after a group of N stores adds **≈0 once N≥8**, but a real **~10 cyc at N≤4**. Decomposed with a base+treat PMU probe ([`tools/g1_decompose.c`](tools/g1_decompose.c); `dmb_ish`, `hit`, 1M \u00d7 15 — data: [`verdict_probe.csv`](verdict_probe.csv)):
-
-| N | Δcyc/op | Δins/op | Δmem/op | stall | fence cost / iter (Δcyc·N) |
-|---|---|---|---|---|---|
-| 1  | +10.087 | +1.000 | 0.000 | 0% | ~10.1 cyc |
-| 4  | +1.969  | +0.250 | 0.000 | 0% | ~7.9 cyc |
-| 8  | +0.205  | +0.125 | 0.000 | 0% | ~1.6 cyc |
-| 16 | -0.001  | +0.063 | 0.000 | 0% | ≈0 |
-| 32 | -0.003  | +0.031 | 0.000 | 0% | ≈0 |
-| 64 | -0.012  | +0.016 | 0.000 | 0% | ≈0 |
-
-- Adds **only the one `dmb`** (`Δins/op = 1/N`), **no extra memory** (`Δmem/op = 0`), **no stall** (`hit` → the stores already retired; nothing to drain) → Δ is purely that fence's own ~10-cyc ordering latency.
-- That latency is **exposed only while the group is shorter than the fence** (N≤4: N·~3 cyc/store ≲ fence ~10 cyc). Once the group's stores take longer than the fence (**N≥8: ~24 cyc ≫ 10**), the out-of-order core **overlaps the single fence** behind them → Δ collapses to ≈0 (slightly negative from N≥16).
-- **Not codegen** (`Δmem = 0`; objdump: `dmb ish` hoisted out of the inner store loop, no per-store reload). The knee scales with fence latency: store-only `dmb ishst` (+2.145 at N=1) is already ≈0 by N=4 (−0.006), full `dmb ish` (~10 cyc) needs N≥8. Counter: `after_every` (one fence per store) stays ~10 cyc/op at every N (+10.292 / +10.114 / +9.712 at N=1/8/64) — each store is on the critical path, nothing to overlap."""),
+   }),
  "2_load_side": dict(what="load-side ordering (fences + load-acquire)", op="load",
    intro="a load-side memory-ordered instruction inserted into a **load** stream — a `dmb` barrier (full `dmb ish`/`sy`, load-only `dmb ishld`/`ld`) **or a load-acquire `ldar` (RCsc) / `ldapr` (RCpc)** (LDAR vs LDR vs LDAPR)",
    window="load issue → load completion",
@@ -424,7 +411,24 @@ def main():
     for t in treats:
         with open(os.path.join(gdir,t,"out","compare_paired.csv")) as f:
             rows += list(csv.DictReader(f))
-    conds = [c for c in ["miss","hit"] if any(r["condition"]==c for r in rows)]
+    # Condition axis. Group 1 sweeps cache RESIDENCY (l1/l2/l3/dram); the other groups
+    # use the two-point hit/miss axis. IS_RESID gates the residency-specific report bits
+    # (cache-validation table, glance, summary) so hit/miss groups stay byte-identical.
+    _RESID_ORDER = ["l1","l2","l3","dram"]
+    resid_conds = [c for c in _RESID_ORDER if any(r["condition"]==c for r in rows)]
+    conds = resid_conds or [c for c in ["miss","hit"] if any(r["condition"]==c for r in rows)]
+    IS_RESID = bool(resid_conds)
+    HAS_PREFETCH = IS_RESID and os.path.isfile(os.path.join(gdir,"prefetch_probe.csv"))
+    # human label + working set per residency condition (for the validation/summary prose)
+    RESID_LABEL = {"l1":"L1-resident","l2":"L1-miss / L2-resident","l3":"L2-miss / L3-resident (SLC)","dram":"DRAM (deep miss)"}
+    def ws_of(cond):
+        ws=[fnum(r,"ws_bytes") for r in rows if r["condition"]==cond]
+        return int(ws[0]) if ws else 0
+    def human_ws(b):
+        b=float(b)
+        for u,d in (("MiB",1<<20),("KiB",1<<10)):
+            if b>=d: return f"{b/d:.0f} {u}"
+        return f"{int(b)} B"
     import statistics as stats, re
     from datetime import date
     # contention data (read once; reused by At-a-glance, Contention-validation, and Result)
@@ -494,6 +498,22 @@ def main():
         snip=os.path.join(gdir,t,"out","objdump.snippet")
         ops=[l.strip() for l in open(snip)] if os.path.isfile(snip) else []
         return sha,gcc,ops
+    def nop_proof(t):
+        # per-function STATIC counts from out/objdump.full: (pass_base nop, pass_base ord,
+        # pass_treat nop, pass_treat ord). Whole-function counts (include gcc alignment nops).
+        full=os.path.join(gdir,t,"out","objdump.full")
+        if not os.path.isfile(full): return None
+        lines=open(full).read().splitlines()
+        def counts(fn):
+            nop=ordc=0; f=False
+            for ln in lines:
+                if re.search(r"<"+fn+r">:", ln): f=True; continue
+                if f and re.match(r"^[0-9a-f]+ <", ln): f=False
+                if f and re.search(r"\bnop\b", ln): nop+=1
+                if f and re.search(r"\b(dmb|stlr)\b", ln): ordc+=1
+            return nop,ordc
+        bn,bo=counts("pass_base"); tn,to=counts("pass_treat")
+        return bn,bo,tn,to
     def med_cond(cond,col):
         vs=[fnum(r,col) for r in rows if r["condition"]==cond]; vs=[v for v in vs if v==v]
         return sorted(vs)[len(vs)//2] if vs else float("nan")
@@ -539,6 +559,7 @@ def main():
     else:
         secs = ["At a glance","Metadata","What this measures","Number Repeated Runs"]
         if HAS_ST:   secs.append("Cache resident / miss validation")
+        if HAS_PREFETCH: secs.append("Prefetcher not engaged")
         if HAS_CONT: secs.append("Contention validation")
         if HAS_ST:   secs.append(st_base_title)
         if HAS_CONT: secs.append("Baseline cost (paired no-ordering phase)")
@@ -681,6 +702,49 @@ def main():
                 gk=all(r["base_pass"]==r["base_tot"] and r["treat_pass"]==r["treat_tot"] for r in rows if r["treatment"]==t)
                 A(f"| `{t}` | {f1(bm)} cyc ({f1(bmn)} ns) | {f1(bh)} cyc ({f1(bhn)} ns) | "
                   f"{worst('miss')} / {worst('hit')} | {'PASS ✓' if gk else 'CHECK'} |")
+        elif IS_RESID:
+            A("Headline of the memory-ordered op — the deepest sweep point (**`after_every` · "
+              "N=64**), across the **cache-residency** sweep (`l1`→`dram`). All cells are the "
+              "**absolute** per-iteration cost in cyc (ns): the first row is the **baseline** (no "
+              "memory-ordered op); each treatment row is the cost **with** that op (= baseline + its "
+              "Δ). `*` = statistically equal to baseline (the op adds no measurable cost). The op's "
+              "incremental Δ is in the *Result* tables. Full sweep below.\n")
+            kt0 = kind(treats[0]) if treats else "all"
+            # SVG: a leading "baseline" group, then each op (absolute = base+Δ), grouped by residency.
+            xcats=["baseline"]+list(treats); cyc={}; nsd={}
+            cyc["baseline"]=[canon(c,64,"base_cyc_iter",kt0) for c in conds]
+            nsd["baseline"]=[canon(c,64,"base_ns_iter",kt0) for c in conds]
+            for t in treats:
+                cv=[]; nv=[]
+                for c in conds:
+                    b=canon(c,64,"base_cyc_iter",kind(t)); d=get(rows,t,"after_every",c,64,"incr_cyc_iter")
+                    cv.append(b+d if (b==b and d==d) else float("nan"))
+                    bn=canon(c,64,"base_ns_iter",kind(t)); dn=get(rows,t,"after_every",c,64,"incr_ns_iter")
+                    nv.append(bn+dn if (bn==bn and dn==dn) else float("nan"))
+                cyc[t]=cv; nsd[t]=nv
+            svg=_svg_fig("At a glance — baseline vs memory-ordered at after_every · N=64, by residency", xcats,
+                         list(conds), ["#cfcfcf","#9e9e9e","#6e6e6e","#3f3f3f"][:len(conds)],
+                         [("cycles / iteration", cyc), ("wall-time / iteration (ns)", nsd)],
+                         xlabel="(baseline) / memory-ordered instruction")
+            open(os.path.join(gdir,"plots","at_a_glance.svg"),"w").write(svg)
+            A("![At a glance: baseline vs memory-ordered per iteration at after_every·N=64, by cache residency](plots/at_a_glance.svg)\n")
+            A("| memory-ordered instruction | " + " | ".join(f"**`{c}`**" for c in conds) + " | gate |")
+            A("|---" * (len(conds)+2) + "|")
+            A("| baseline, no op | " + " | ".join(
+                f"{canon(c,64,'base_cyc_iter',kt0):.1f} cyc ({canon(c,64,'base_ns_iter',kt0):.1f} ns)" for c in conds) + " | — |")
+            for t in treats:
+                kt=kind(t)
+                def cell(cond):
+                    d=get(rows,t,"after_every",cond,64,"incr_cyc_iter")
+                    n=get(rows,t,"after_every",cond,64,"incr_ns_iter")
+                    if d!=d: return "—"
+                    b=canon(cond,64,"base_cyc_iter",kt); bn=canon(cond,64,"base_ns_iter",kt)
+                    vc=b+d; vn=bn+n
+                    mg=margin(cond,64,"base_cyc_iter",kt)
+                    star="*" if (mg==mg and d<=mg) else ""
+                    return f"{vc:.1f}{star} cyc ({vn:.1f}{star} ns)"
+                gk=all(r["base_pass"]==r["base_tot"] and r["treat_pass"]==r["treat_tot"] for r in rows if r["treatment"]==t)
+                A(f"| `{t}` | " + " | ".join(cell(c) for c in conds) + f" | {'PASS ✓' if gk else 'CHECK'} |")
         else:
             A("Headline Δ of the memory-ordered op — the deepest sweep point (**`after_every` · "
               "N=64**), `miss` vs `hit`; values exactly as in the *Result* tables (per-iteration, "
@@ -819,6 +883,48 @@ def main():
 
     def sec_cache_validation(H):
         A(f"{H} Cache resident / miss validation\n")
+        if IS_RESID:
+            A("Group 1 sweeps cache **residency**: the store working set is sized to resolve at "
+              "L1 / L2 / L3 (shared SLC) / DRAM. The residency **level is set by the working-set "
+              "size + the per-store latency** — validated by "
+              "[`tools/cache_residency.c`](../tools/cache_residency.c) (~4 / 11 / 21 / 645 cyc) — "
+              "**not** by the core \"miss\" counters, which cannot separate the on-mesh shared SLC "
+              "from DRAM. `latency cyc/store (N=1)` below is the **N=1 baseline** (one store/iter, "
+              "exposed by the cross-iteration dependency): it **rises monotonically L1→DRAM** — it "
+              "would be ~8 cyc flat for every level if cross-iteration store-MLP were *not* removed "
+              "(the OoO core would overlap many iterations' misses), so this gradient is the proof "
+              "the dependency neutralized cross-iteration MLP AND the proof of residency.\n")
+            A("> **Why no `l3d_refill` (0x2a) column.** Two reasons. (1) It is **not in the main "
+              "6-counter PMU group** (cycles + l1d_refill/l2d_refill/ll_miss_rd/mem_access/stall + "
+              "instructions already fill the 6 programmable counters at `mux = 1.000`); adding it "
+              "would force multiplexing. (2) Even if measured, it **mislabels residency**: at the "
+              "L3-resident 8 MiB it reads ≈ 1.0 — identical to DRAM — because the 114 MiB \"L3\" is "
+              "the 72-core **shared SLC outside the core**, so `l3d_refill` / `ll_miss_rd` count "
+              "\"left the core cluster,\" which an SLC hit also triggers. See METHODOLOGY §7.1, "
+              "*Finding — the \"L3\" is the shared System-Level Cache (SLC)*. (`l2d_refill` and "
+              "`ll_miss_rd` are shown above only as info, with the same caveat.) The focused `lmiss` "
+              "run in *Prefetcher not engaged* (below) uses these events for the prefetch check, where "
+              "the mislabel is also visible (`l3d_lmiss_rd` rises L1→DRAM but is non-zero already at "
+              "L2/L3-resident).\n")
+            A("> **Counter note — cross-iteration dependency.** Iterations are serialized by a "
+              "residency-matched pointer-chase (one dependent miss-load per iteration; see "
+              "METHODOLOGY §7.1), so `l1_refill/acc` carries the chase's own L1 miss **on top of** "
+              "the stores — ≈ **1 + 1/N** at the miss levels (~2 at N=1, ~1 at N=64). The gate uses "
+              "it only to confirm the stores **miss L1** (resident `l1≤0.02`; l2/l3 `l1≥0.50`; dram "
+              "`l1≥0.90` + `ll≥0.50` + `stall≥10%`); all rows mux = 1.000, cs/mig/pf = 0.\n")
+            A("| condition | working set | latency cyc/store (N=1) | l1_refill/acc | l2_refill/acc | ll_miss_rd/acc | stall %cyc | mux | cs/mig/pf | gate-clean |")
+            A("|---|---|---|---|---|---|---|---|---|---|")
+            for c in conds:
+                lat=canon(c,1,"base_cyc_op","all")
+                l1=med_cond(c,"base_l1_acc"); l2=med_cond(c,"base_l2_acc"); ll=med_cond(c,"base_ll_acc")
+                st=med_cond(c,"base_stall_frac")*100; mx=med_cond(c,"base_mux")
+                cs=med_cond(c,"base_cs"); mig=med_cond(c,"base_mig"); pf=med_cond(c,"base_pf")
+                tot=sum(1 for r in rows if r["condition"]==c)
+                clean=sum(1 for r in rows if r["condition"]==c and r["base_pass"]==r["base_tot"] and r["treat_pass"]==r["treat_tot"])
+                A(f"| **{c}** — {RESID_LABEL[c]} | {human_ws(ws_of(c))} | {lat:.2f} | {l1:.2f} | {l2:.2f} | {ll:.2f} | {st:.0f}% | {mx:.3f} | "
+                  f"{int(cs)}/{int(mig)}/{int(pf)} | {clean}/{tot} {'✓' if clean==tot else '✗'} |")
+            A("")
+            return
         A("Median baseline counters per condition — proof the intended cache state held. "
           "**MISS**: l1_refill/acc ≈ 1 (every access misses L1), ll_miss_rd/acc high "
           "(reaches the LL cache / DRAM), stall % high (miss latency exposed ⇒ prefetcher "
@@ -839,6 +945,42 @@ def main():
             A("\n(This group mixes store and load treatments; each row is a per-condition "
               "median across both — store and load streams both PASS their respective gate.)")
         A("")
+
+    def sec_prefetch(H):
+        # Long-latency-miss validation that the HW prefetcher is NOT hiding the
+        # store-stream miss latency (so the baseline cyc/store is genuine miss latency,
+        # not a prefetch shortcut). Data: prefetch_probe.csv (tools/prefetch_probe.c).
+        pf=os.path.join(gdir,"prefetch_probe.csv")
+        prows=list(csv.DictReader(open(pf)))
+        n1=[r for r in prows if r["stores"]=="1"]   # N=1 = cold, 1 store + 1 chase / op (cleanest)
+        order={c:i for i,c in enumerate(["l1","l2","l3","dram"])}
+        n1.sort(key=lambda r:order.get(r["condition"],9))
+        A(f"{H} Prefetcher not engaged\n")
+        A("Is the baseline `cyc/store` fast because a hardware prefetcher hid the misses? **No.** "
+          "Neoverse-V2 has **no dedicated prefetch counter**, so the **long-latency-miss** events are "
+          "the proxy: a miss a prefetcher had hidden would not be *long-latency*. This focused 6-event "
+          "run (no multiplexing) replays the **exact construction-B baseline store stream** (no "
+          "ordering op) at each residency level — [`tools/prefetch_probe.c`](../tools/prefetch_probe.c), "
+          "data [`prefetch_probe.csv`](prefetch_probe.csv), `N=1` cold rows (1 store + 1 chase per op):\n")
+        A("| condition | cyc/store (cold) | `l1d_refill_wr`/op (store L1-miss) | `l1d_lmiss_rd`/op (read long-lat.) | `l2d_lmiss_rd`/op | `l3d_lmiss_rd`/op | mux |")
+        A("|---|---|---|---|---|---|---|")
+        for r in n1:
+            A(f"| **{r['condition']}** | {float(r['cyc_op']):.1f} | {float(r['l1d_refill_wr_op']):.2f} | "
+              f"{float(r['l1d_lmiss_rd_op']):.2f} | {float(r['l2d_lmiss_rd_op']):.2f} | "
+              f"{float(r['l3d_lmiss_rd_op']):.2f} | {float(r['mux']):.3f} |")
+        A("")
+        A("Both the store addresses (register-hash) and the dependency chase (random permutation "
+          "cycle) are **prefetcher-defeating by construction** (non-strided). The counters confirm "
+          "it: at every miss level **each store causes an L1 write-refill** (`l1d_refill_wr/op ≈ 1` "
+          "⇒ stores miss L1, not prefetched in) and **each chase read is a long-latency miss** "
+          "(`l1d_lmiss_rd/op ≈ 1`), with the deeper read-miss counts (`l2d`/`l3d_lmiss_rd`) **rising "
+          "monotonically L1→DRAM**. A prefetcher that hid the misses would instead push these toward "
+          "**0** while keeping `cyc/store` low — the opposite of what is measured. So the baseline "
+          "`cyc/store` is genuine miss latency. (The cold `cyc/store` ≈ the serial-chase residency "
+          "latency — L1 ~4 / L2 ~11 / L3 ~21 / DRAM ~645 — confirming each level is truly reached; "
+          "the *Cache-validation* table's lower DRAM figure is the 10-repeat median, where re-touching "
+          "the ~64 MiB footprint warms it into the shared SLC — a repeat-warming effect, **not** "
+          "prefetch.)\n")
 
     def sec_contention_validation(H):
         if not (crows and m.get("cont_impl")): return
@@ -903,6 +1045,42 @@ def main():
                       f"| {canon(c,n,'base_ns_iter',k):.1f} | {refmin(c,n,'base_ns_iter',k):.1f}–{refmax(c,n,'base_ns_iter',k):.1f} "
                       f"| {refstd(c,n,'base_ns_iter',k):.1f} | **{margin(c,n,'base_ns_iter',k):.1f}** |")
             A("")
+        if IS_RESID:
+            A("**NOP padding (instruction-slot matching).** The no-ordering baseline carries a `nop` "
+              "(`asm volatile(\"nop\")`) wherever the treatment carries its ordering op — one per "
+              "store (`after_every`) or one at the group end (`after_group`) — so both paths decode "
+              "the same number of instructions and the paired Δ isolates the fence's **drain**, not "
+              "the front-end decode of an extra instruction. For the store-side `dmb` treatments the "
+              "`dmb` **occupies** that slot (treatment adds **no** `nop`); **`stlr` is the exception** "
+              "— STLR *replaces* the STR, so to match slot count and give a clean STLR−STR contrast "
+              "**both** its baseline and treatment carry the `nop` (cancels in the paired Δ).\n")
+            # objdump static counts (whole-function), decomposed into ours vs gcc alignment.
+            def _np(t):
+                r=nop_proof(t); return r if r else (0,0,0,0)
+            _dmbt = next((t for t in treats if t!="stlr"), treats[0] if treats else None)
+            bn,bo,tn,to = _np(_dmbt) if _dmbt else (0,0,0,0)
+            sbn,sbo,stn,sto = _np("stlr") if "stlr" in treats else (bn,bo,tn,to)
+            A("objdump static counts (`<t>/out/objdump.full`), decomposed:\n")
+            A("| function | `nop` (objdump) | of which: ours (intended) | gcc alignment | ordering-op |")
+            A("|---|---|---|---|---|")
+            A(f"| `pass_base` — baseline (every treatment) | {bn} | 2 (one per code path) | {bn-2} | **{bo}** |")
+            A(f"| `pass_treat` — `dmb …` | {tn} | 0 (the `dmb` fills the slot) | {tn} | **{to}** |")
+            if "stlr" in treats:
+                A(f"| `pass_treat` — `stlr` | {stn} | 2 (STLR replaces STR) | {stn-2} | **{sto}** |")
+            A("")
+            A("> **Reading the table — these are STATIC instruction counts (the binary), not "
+              "runtime.** (1) The N sweep (1→64) is a **runtime loop bound**, not unrolling: the "
+              "compiler emits **one** store + **one** `nop`/`dmb` per loop body, and at runtime that "
+              "single static `dmb` **executes N×iters times** (`after_every`) or `iters` times "
+              "(`after_group`) — so the static count never grows with N. (2) Each `pass_*` has "
+              "**two** code paths (`after_every` + `after_group`), so there are **2** static "
+              "ordering-ops (one per path) and **2** intended `nop`s in `pass_base` (one per path) — "
+              "they match. (3) The `nop` *total* is larger (`pass_base` "
+              "= our 2 + gcc alignment) because gcc pads loop heads / branch targets (and bytes "
+              "after `ret`) to a 16-byte instruction-fetch boundary — a standard codegen "
+              "optimization **outside** the hot loop, never executed in the timed region, so it does "
+              "not affect Δ. The clean check is the **ordering-op column: 0 in `pass_base`** (no "
+              "fence in the baseline) **and 2 in `pass_treat`** (one per code path).\n")
 
     def sec_baseline_paired(H):
         A(f"{H} Baseline cost (paired no-ordering phase)\n")
@@ -944,8 +1122,16 @@ def main():
             place_legend = "the **memory order** of the treatment RMW (the baseline is always `relaxed`)"
             n_legend = f"{op}s per group-iteration"
         else:
-            A(f"- **Tested** — {m['intro']}; `miss` = 512 MiB prefetcher-defeated stream, "
-              f"`hit` = 2 KiB resident; swept by placement × condition × N.")
+            if IS_RESID:
+                A(f"- **Tested** — {m['intro']}; swept across **cache residency** "
+                  f"(`l1` {human_ws(ws_of('l1'))} / `l2` {human_ws(ws_of('l2'))} / `l3` "
+                  f"{human_ws(ws_of('l3'))} / `dram` {human_ws(ws_of('dram'))}, latency-validated) "
+                  f"× placement × N. Iterations are serialized by a residency-matched dependency "
+                  f"chase (METHODOLOGY §7.1) so the baseline reflects per-iteration cost, not "
+                  f"cross-iteration store-MLP.")
+            else:
+                A(f"- **Tested** — {m['intro']}; `miss` = 512 MiB prefetcher-defeated stream, "
+                  f"`hit` = 2 KiB resident; swept by placement × condition × N.")
             A("- **Compared** — the same stream **without** the memory-ordered op (baseline) vs **with** "
               "it (treatment) — interleaved in ONE process per repeat (paired).")
             A("- **Result value** — **Δ = treatment − baseline** = the memory-ordered op's incremental "
@@ -1169,6 +1355,24 @@ def main():
                       f"{_ep('acqrel',c,'incr_cyc_iter')} | {_ep('seqcst',c,'incr_cyc_iter')} |")
                     A(f"| | | Δ ns/iter | {_ep('acquire',c,'incr_ns_iter')} | {_ep('release',c,'incr_ns_iter')} | "
                       f"{_ep('acqrel',c,'incr_ns_iter')} | {_ep('seqcst',c,'incr_ns_iter')} |")
+        elif IS_RESID:
+            # one row pair per (treatment, residency level): too many combos (4 conds × 2
+            # placements) for a single wide row, so condition is its own column.
+            A("| treatment | condition | unit | after_group (N=1→64) | after_every (N=1→64) |")
+            A("|---|---|---|---|---|")
+            for t in treats:
+                kt=kind(t)
+                def _ep(pl,c,col):
+                    def cell(n):
+                        v=get(rows,t,pl,c,n,col)
+                        dc=get(rows,t,pl,c,n,"incr_cyc_iter")
+                        mg=margin(c,n,"base_cyc_iter",kt)
+                        star="*" if (mg==mg and dc==dc and dc<=mg) else ""
+                        return f"{v:+.1f}{star}" if v==v else "—"
+                    return f"{cell(1)} → {cell(64)}"
+                for c in conds:
+                    A(f"| `{t}` | {c} | Δ cyc/iter | {_ep('after_group',c,'incr_cyc_iter')} | {_ep('after_every',c,'incr_cyc_iter')} |")
+                    A(f"| | | Δ ns/iter | {_ep('after_group',c,'incr_ns_iter')} | {_ep('after_every',c,'incr_ns_iter')} |")
         else:
             A("| treatment | unit | `miss` · after_group (N=1→64) | `miss` · after_every (N=1→64) | `hit` · after_group (N=1→64) | `hit` · after_every (N=1→64) |")
             A("|---|---|---|---|---|---|")
@@ -1256,6 +1460,7 @@ def main():
         sec_baseline_paired("###"); sec_result_cont("###","####"); sec_summary_cont("###","####")
     elif HAS_ST:                   # G1/G2 — single-thread, flat
         sec_what("##","st"); sec_repeated_st("##"); sec_cache_validation("##")
+        if HAS_PREFETCH: sec_prefetch("##")
         sec_baseline_nofence("##"); sec_result_st("##","###"); sec_summary_st("##","###")
     else:                          # G3 — single-line contention, flat
         sec_what("##","cont"); sec_repeated_cont("##"); sec_contention_validation("##")

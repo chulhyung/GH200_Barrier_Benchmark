@@ -1,0 +1,13 @@
+treatment,condition,stores,delta_cyc_iter_nonop
+dmb_ish,l1,1,8.26
+stlr,l1,1,0.01
+dmb_ish,l1,8,78.46
+stlr,l1,8,0.05
+dmb_ish,l1,64,636.71
+stlr,l1,64,-0.40
+dmb_ish,l3,1,13.20
+stlr,l3,1,0.27
+dmb_ish,l3,8,127.68
+stlr,l3,8,39.97
+dmb_ish,l3,64,940.11
+stlr,l3,64,344.18

@@ -8,9 +8,10 @@ at H2, sections at H3, treatments at H4)."""
 import os, re, csv, statistics as stats, sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GROUPS = ["1_store_side","2_load_side","3_contention","4_atomics"]
+GROUPS = ["1_store_side","2_load_side","3_contention","4_atomics","5_release_serialization"]
 NS = [1,2,4,8,16,32,64]
 ST_PLACE = {"after_group","after_every","acquire","release","acqrel","seqcst"}
+COND_RE = r"(miss|hit|l1|l2|l3|dram)"   # hit/miss (G2/G4) + Group-1 cache-residency levels
 
 def num(s):
     s = s.strip().replace("**","").replace("*","").replace("≈0","").replace("–","-")
@@ -67,7 +68,7 @@ def check_group(g):
             if h=="Result":
                 rmode = "cont" if (part=="B" or (HAS_CONT and not HAS_ST)) else "st"
             continue
-        mc=re.match(r"\*\*(miss|hit)\*\*",ln)
+        mc=re.match(r"\*\*"+COND_RE+r"\*\*",ln)
         if mc: cur_cond=mc.group(1); continue
         if not ln.startswith("| "): continue
         c=split_cells(ln)
@@ -99,7 +100,7 @@ def check_group(g):
                 if not close(rv,cv,tol): M(f"CONT {label} {cur_t}/{kind}/T{T}: README {rv} vs CSV {cv}")
             continue
         # ---- Baseline cost (no fence / relaxed) [single-thread]: condition|N|n|ref cyc|min-max|σ|margin|...
-        if sec and sec.startswith("Baseline cost") and "paired" not in sec and re.match(r"^(miss|hit)$",c[0]) and len(c)>=7:
+        if sec and sec.startswith("Baseline cost") and "paired" not in sec and re.match(r"^"+COND_RE+r"$",c[0]) and len(c)>=7:
             cond=c[0]
             try: N=int(c[1])
             except: continue
@@ -128,6 +129,18 @@ def check_group(g):
             for label,rv,col,tol in [("mux",num(c[4]),"mux",0.002),("l1",num(c[5]),"treat_l1_op",0.002),("remote",num(c[6]),"treat_remote_op",0.002)]:
                 cv=cn(nm,T,col); nchk+=1
                 if not close(rv,cv,tol): M(f"CVAL {label} {nm}/T{T}: README {rv} vs CSV {cv}")
+            continue
+        # ---- Summary (Group 1 residency): | `t` | cond | Δ cyc/iter | after_group(N=1→64) | after_every(N=1→64)
+        if sec=="Summary" and len(c)==5 and c[2] in ("Δ cyc/iter","Δ ns/iter"):
+            if c[0].startswith("`"): cur_t=c[0].strip("`")
+            if re.match(r"^"+COND_RE+r"$",c[1]): cur_cond=c[1]
+            col = "incr_cyc_iter" if c[2]=="Δ cyc/iter" else "incr_ns_iter"
+            for cell,pl in zip((c[3],c[4]),("after_group","after_every")):
+                ends=re.findall(r"[-+]\d+\.?\d*",cell)
+                if len(ends)<2: continue
+                for N,rv in ((1,float(ends[0])),(64,float(ends[-1]))):
+                    cv=incr_lookup(incr,cur_t,pl,cur_cond,N,col); nchk+=1
+                    if not close(rv,cv,0.06): M(f"SUMR {col} {cur_t}/{pl}/{cur_cond}/N{N}: README {rv} vs CSV {cv}")
             continue
         # ---- Summary (fence groups G1/G2): | `t` | Δ cyc/iter | a → b | ... (4 combos, N=1→64)
         if sec=="Summary" and len(c)==6 and c[1] in ("Δ cyc/iter","Δ ns/iter"):
@@ -217,6 +230,25 @@ def check_group(g):
                             cv=float(r[col]) if r else None
                             nchk+=1
                             if not close(v[i],cv,0.06): M(f"GLANCE {col} {nm}/T{T}: README {v[i]} vs CSV {cv}")
+            elif len(c)==6 and incr and "cyc (" in c[1]:
+                # Group-1 residency glance: | inst | l1 | l2 | l3 | dram | gate (after_every·N=64, per-iter).
+                # ABSOLUTE values: baseline row (no backtick) = pooled base; treatment rows = base + Δ.
+                for cell,cond in zip(c[1:5],("l1","l2","l3","dram")):
+                    v=re.findall(r"[-+]?\d+\.?\d*",cell)
+                    if len(v)<2: continue
+                    pc=base_pool(brows,cond,64,"base_cyc_iter"); pn=base_pool(brows,cond,64,"base_ns_iter")
+                    mc=stats.median(pc) if pc else None; mn=stats.median(pn) if pn else None
+                    nchk+=2
+                    if nm:   # treatment row: absolute = base + Δ
+                        dc=incr_lookup(incr,nm,"after_every",cond,64,"incr_cyc_iter")
+                        dn=incr_lookup(incr,nm,"after_every",cond,64,"incr_ns_iter")
+                        ec=round(mc+dc,1) if (mc is not None and dc is not None) else None
+                        en=round(mn+dn,1) if (mn is not None and dn is not None) else None
+                        if not close(float(v[0]),ec,0.06): M(f"GLANCE abs cyc {nm}/{cond}: README {v[0]} vs base+Δ {ec}")
+                        if not close(float(v[1]),en,0.06): M(f"GLANCE abs ns {nm}/{cond}: README {v[1]} vs base+Δ {en}")
+                    else:    # baseline row: pooled base median
+                        if not close(float(v[0]),round(mc,1) if mc is not None else None,0.06): M(f"GLANCE base cyc {cond}: README {v[0]} vs {mc}")
+                        if not close(float(v[1]),round(mn,1) if mn is not None else None,0.06): M(f"GLANCE base ns {cond}: README {v[1]} vs {mn}")
             elif len(c)==4 and incr and nm and "cyc (" in c[1]:
                 # fence glance: | t | Δ miss "x cyc (y ns)" | Δ hit | gate  — per-ITERATION (Result values)
                 for cell,cond in [(c[1],"miss"),(c[2],"hit")]:
@@ -249,9 +281,67 @@ def check_group(g):
             continue
     return nchk,mism
 
+def check_g5(g):
+    """G5 (5_release_serialization) has a non-standard layout (one CSV row per (variation,N/x);
+    baseline=str / treatment=stlr, paired). Dedicated handler: every base/treat/Δ cell in the
+    GROUP README (At a glance + Result, Var1 & Var2) AND in the TOP README §6.5 must match
+    out/release_serial.csv cell-for-cell. Also checks the group README's Baseline cost table
+    (ref/margin cyc+ns) and Pattern/cache validation table (l1/ll/mux). Variation context = the
+    `Variation 1`/`Variation 2` marker; base/Δ rows keyed by leading int, aux tables by (var=c0,key=c1)."""
+    mism=[]; nchk=[0]
+    rows=load_csv(os.path.join(REPO,g,"out","release_serial.csv"))
+    if not rows: return 0,[f"{g}: no out/release_serial.csv"]
+    def find(var,key):
+        kcol = "N" if var==1 else "hits_x"
+        for r in rows:
+            if int(r["variation"])==var and int(r[kcol])==key: return r
+        return None
+    def cellnums(cell):   # [cyc, ns] from "x.y cyc (a.b ns)" (strip **, ≈0, − sign)
+        v=re.findall(r"[-+]?\d+\.?\d*", cell.replace("**","").replace("−","-"))
+        return [float(x) for x in v]
+    def scan(tag, lines):
+        var=None
+        for ln in lines:
+            if "Variation 1" in ln: var=1
+            elif "Variation 2" in ln: var=2
+            if not ln.startswith("| "): continue
+            c=split_cells(ln)
+            # Baseline cost (11 col) & Validation (9 col): leading cell = variation, c[1] = key (N/x)
+            if len(c) in (9,11) and re.match(r"^\d+$",c[0]) and re.match(r"^\d+$",c[1]):
+                rr=find(int(c[0]),int(c[1]))
+                if not rr: mism.append(f"{tag} aux var{c[0]} key{c[1]}: no CSV row"); continue
+                pairs = ([(c[3],"base_cyc_iter"),(c[6],"base_cyc_margin"),(c[7],"base_ns_iter"),(c[10],"base_ns_margin")]
+                         if len(c)==11 else  # validation (9 col): l1 (base/treat), ll (base/treat), mux
+                         [(c[3],"base_l1_iter"),(c[4],"treat_l1_iter"),(c[5],"base_ll_iter"),(c[6],"treat_ll_iter"),(c[7],"mux")])
+                for cell,col in pairs:
+                    nums=cellnums(cell)
+                    if not nums: continue
+                    nchk[0]+=1
+                    if abs(nums[0]-float(rr[col]))>0.06:
+                        mism.append(f"{tag} aux {col} var{c[0]} key{c[1]}: README {nums[0]} vs CSV {rr[col]}")
+                continue
+            if not re.match(r"^\d+$", c[0]) or var is None: continue
+            if   len(c)==5:               bcell,tcell,dcell=c[1],c[2],c[3]   # At-a-glance / Result Var1
+            elif len(c)==6 and var==2:    bcell,tcell,dcell=c[2],c[3],c[4]   # Result Var2 (has miss/iter col)
+            else: continue
+            r=find(var,int(c[0]))
+            if not r: mism.append(f"{tag} var{var} key{c[0]}: no CSV row"); continue
+            for label,cell,(cc,nc) in [("base",bcell,("base_cyc_iter","base_ns_iter")),
+                                       ("treat",tcell,("treat_cyc_iter","treat_ns_iter")),
+                                       ("Δ",dcell,("d_cyc_iter","d_ns_iter"))]:
+                nums=cellnums(cell)
+                if len(nums)<2: continue
+                for got,col in ((nums[0],cc),(nums[1],nc)):
+                    want=float(r[col]); nchk[0]+=1
+                    if abs(got-want)>0.06:
+                        mism.append(f"{tag} var{var} {label} {col} key{c[0]}: README {got} vs CSV {want}")
+    scan("G5", open(os.path.join(REPO,g,"README.md")).read().splitlines())          # group README
+    scan("top§6.5", open(os.path.join(REPO,"README.md")).read().splitlines())        # top README §6.5
+    return nchk[0],mism
+
 total=0; allm=[]
 for g in GROUPS:
-    n,mm=check_group(g)
+    n,mm = check_g5(g) if g=="5_release_serialization" else check_group(g)
     total+=n; allm+=mm
     print(f"[{g}] checked {n} cells, {len(mm)} mismatch")
     for x in mm[:40]: print("   ✗", x)

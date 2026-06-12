@@ -1,22 +1,74 @@
-/* 3_release_acquire/stlr — STANDALONE paired store-release (stlr vs str).
+/* 1_store_side/stlr — STANDALONE paired store-release (stlr vs str).
  * after_every = all stores stlr; after_group = N-1 str + 1 stlr (realistic publish).
- * Paired baseline(str) vs treatment(stlr). Register-hash store-only stream. */
+ * Paired baseline(str) vs treatment(stlr). Register-hash store-only stream.
+ *
+ * Group-1 specifics (Pranith rerun) — match the dmb benches so Δ is comparable:
+ *   - NOP PADDING: BOTH baseline and treatment carry a `nop` after each store
+ *     (after_every) / one at the group end (after_group). STR and STLR are both single
+ *     store instructions, so the nop just equalizes the instruction-slot count with
+ *     the dmb benches; Δ = STLR − STR with matched decode.
+ *   - CROSS-ITERATION DEPENDENCY: store line index = hash(j ^ (dep>>6)), dep a byte
+ *     offset reloaded once per iteration from a RESIDENCY-MATCHED pointer chase
+ *     (dep = *(chase+dep), one cycle over a buffer the SAME SIZE as the store working
+ *     set). The dependent miss-load chain is the loop bottleneck -> serializes
+ *     iterations (neutralizes cross-iteration store-MLP); the N intra-iteration stores
+ *     stay independent. Same in base & treat (Δ stays clean). Not a store-stream chase.
+ *   - 4 cache-RESIDENCY conditions (l1/l2/l3/dram) via --condition + --working-set. */
 #include "bench_common.h"
 #include "aarch64_ops.h"
 #define TREAT_NAME  "stlr"
 #define GATE_KIND   BB_STORE
-#define BENCH_GROUP "release_acquire"
+#define BENCH_GROUP "store_side"
 enum { PLACE_GROUP=1, PLACE_EVERY=2 };
-#define ADDR(J) (volatile uint64_t*)(base+(size_t)bb_hash_idx((J),w->mask)*BB_CACHE_LINE)
-static uint64_t pass_base(bb_workset_t *w, uint64_t iters, uint64_t stores, uint64_t *nout){
-    uint64_t acc=0,n=0; char*base=(char*)w->buf.base;
-    for(uint64_t i=0;i<iters;i++) for(uint64_t k=0;k<stores;k++){ uint64_t j=i*stores+k; store_plain_64(ADDR(j), j^acc); acc+=j; n++; }
-    *nout=n; return acc; }
-static uint64_t pass_treat(bb_workset_t *w, uint64_t iters, uint64_t stores, int placement, uint64_t *nout){
-    uint64_t acc=0,n=0; char*base=(char*)w->buf.base;
-    if(placement==PLACE_EVERY){ for(uint64_t i=0;i<iters;i++) for(uint64_t k=0;k<stores;k++){ uint64_t j=i*stores+k; store_release_64(ADDR(j), j^acc); acc+=j; n++; } }
-    else { for(uint64_t i=0;i<iters;i++){ uint64_t k; for(k=0;k+1<stores;k++){ uint64_t j=i*stores+k; store_plain_64(ADDR(j), j^acc); acc+=j; n++; } { uint64_t j=i*stores+(stores-1); store_release_64(ADDR(j), j^acc); acc+=j; n++; } } }
-    *nout=n; return acc; }
+#define ADDR(J) (volatile uint64_t*)(base+(size_t)bb_hash_idx((J) ^ (dep>>6),w->mask)*BB_CACHE_LINE)
+#define DEP_NEXT() dep = load_plain_64((volatile uint64_t *)(chase + dep))
+static uint64_t pass_base(bb_workset_t *w, uint64_t iters, uint64_t stores, int placement,
+                          const char *chase, uint64_t *nout){
+    uint64_t acc=0,n=0,dep=0; char*base=(char*)w->buf.base;
+    if(placement==PLACE_EVERY){
+        for(uint64_t i=0;i<iters;i++){
+            for(uint64_t k=0;k<stores;k++){ uint64_t j=i*stores+k; store_plain_64(ADDR(j), j^acc); nop_pad(); acc+=j; n++; }
+            DEP_NEXT();
+        }
+    } else {
+        for(uint64_t i=0;i<iters;i++){
+            for(uint64_t k=0;k<stores;k++){ uint64_t j=i*stores+k; store_plain_64(ADDR(j), j^acc); acc+=j; n++; }
+            nop_pad();
+            DEP_NEXT();
+        }
+    }
+    *nout=n; return acc+dep; }
+static uint64_t pass_treat(bb_workset_t *w, uint64_t iters, uint64_t stores, int placement,
+                           const char *chase, uint64_t *nout){
+    uint64_t acc=0,n=0,dep=0; char*base=(char*)w->buf.base;
+    if(placement==PLACE_EVERY){
+        for(uint64_t i=0;i<iters;i++){
+            for(uint64_t k=0;k<stores;k++){ uint64_t j=i*stores+k; store_release_64(ADDR(j), j^acc); nop_pad(); acc+=j; n++; }
+            DEP_NEXT();
+        }
+    } else {
+        for(uint64_t i=0;i<iters;i++){
+            uint64_t k;
+            for(k=0;k+1<stores;k++){ uint64_t j=i*stores+k; store_plain_64(ADDR(j), j^acc); acc+=j; n++; }
+            { uint64_t j=i*stores+(stores-1); store_release_64(ADDR(j), j^acc); acc+=j; n++; }
+            nop_pad();
+            DEP_NEXT();
+        }
+    }
+    *nout=n; return acc+dep; }
+/* residency-matched dependency carrier: a single cache-line cycle over a buffer the
+ * same size as the store working set (so chase loads miss at the same level). */
+static char *make_chase(size_t bytes, uint64_t seed) {
+    bb_buf_t cb = bb_alloc(bytes);
+    size_t nl = bytes / BB_CACHE_LINE; if (!nl) nl = 1;
+    size_t *perm = (size_t *)malloc(nl * sizeof(size_t));
+    for (size_t i = 0; i < nl; i++) perm[i] = i;
+    bb_shuffle(perm, nl, seed);
+    for (size_t i = 0; i < nl; i++)
+        *(uint64_t *)((char *)cb.base + perm[i]*BB_CACHE_LINE) = (uint64_t)(perm[(i+1)%nl]*BB_CACHE_LINE);
+    free(perm);
+    return (char *)cb.base;   /* leaked intentionally: lives for the whole process */
+}
 #define CSV_HEADER \
 "treatment,placement,condition,pattern,ws_bytes,stores,iters,warmup,repeat,core,numa_bind,n_access," \
 "base_cyc,base_ns,base_l1,base_l2,base_ll,base_mem,base_stall,base_enabled,base_running," \
@@ -34,9 +86,10 @@ int main(int argc, char **argv) {
     bb_pin_to_core(a.core);
     int placement = (!strcmp(a.fence_placement, "after_every")) ? PLACE_EVERY : PLACE_GROUP;
     bb_workset_t w = bb_workset_make(a.working_set, a.pattern, a.streams, a.seed);
+    char *chase = make_chase(a.working_set, a.seed ^ 0x5151ull);   /* residency-matched dep carrier */
     uint64_t dummy = 0, sink = 0;
-    if (a.warmup) { sink += pass_base(&w, a.warmup, a.stores?a.stores:1, &dummy);
-                    sink += pass_treat(&w, a.warmup, a.stores?a.stores:1, placement, &dummy); }
+    if (a.warmup) { sink += pass_base(&w, a.warmup, a.stores?a.stores:1, placement, chase, &dummy);
+                    sink += pass_treat(&w, a.warmup, a.stores?a.stores:1, placement, chase, &dummy); }
     bb_pmu_t pmu;
     if (bb_pmu_open(&pmu) != 0) { fprintf(stderr, "FATAL: PMU open failed\n"); return 2; }
     bb_thresholds_t th = bb_default_thresholds();
@@ -55,8 +108,8 @@ int main(int argc, char **argv) {
 
     for (int rep = 0; rep < R; rep++) {
         uint64_t nb=0, nt=0, t0, t1, bns, tns; bb_counts_t cb, ct; char rb[128], rt[128];
-        t0=bb_now_ns(); bb_pmu_start(&pmu); sink += pass_base(&w, a.iters, a.stores, &nb);            bb_pmu_stop(&pmu); t1=bb_now_ns(); bb_pmu_read(&pmu,&cb); bns=t1-t0;
-        t0=bb_now_ns(); bb_pmu_start(&pmu); sink += pass_treat(&w, a.iters, a.stores, placement, &nt); bb_pmu_stop(&pmu); t1=bb_now_ns(); bb_pmu_read(&pmu,&ct); tns=t1-t0;
+        t0=bb_now_ns(); bb_pmu_start(&pmu); sink += pass_base(&w, a.iters, a.stores, placement, chase, &nb);            bb_pmu_stop(&pmu); t1=bb_now_ns(); bb_pmu_read(&pmu,&cb); bns=t1-t0;
+        t0=bb_now_ns(); bb_pmu_start(&pmu); sink += pass_treat(&w, a.iters, a.stores, placement, chase, &nt); bb_pmu_stop(&pmu); t1=bb_now_ns(); bb_pmu_read(&pmu,&ct); tns=t1-t0;
         int gb = bb_gate_eval(a.condition, GATE_KIND, &cb, nb, &th, rb);
         int gt = bb_gate_eval(a.condition, GATE_KIND, &ct, nt, &th, rt);
         base_pass += gb; treat_pass += gt;

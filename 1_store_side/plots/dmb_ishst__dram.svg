@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1072" height="420" viewBox="0 0 1072 420" font-family="sans-serif">
+<rect width="1072" height="420" fill="white"/>
+<text x="536" y="20" text-anchor="middle" font-size="15" font-weight="bold">dmb_ishst  (dram)</text>
+<rect x="371" y="32" width="12" height="12" fill="#ffffff" stroke="black" stroke-width="0.8"/>
+<text x="387" y="42" font-size="11">Baseline</text>
+<rect x="491" y="32" width="12" height="12" fill="#9e9e9e" stroke="black" stroke-width="0.8"/>
+<text x="507" y="42" font-size="11">After group</text>
+<rect x="611" y="32" width="12" height="12" fill="#3f3f3f" stroke="black" stroke-width="0.8"/>
+<text x="627" y="42" font-size="11">After every</text>
+<line x1="58" y1="60" x2="58" y2="366" stroke="black" stroke-width="1.4"/>
+<line x1="58" y1="366" x2="518" y2="366" stroke="black" stroke-width="1.4"/>
+<text x="15" y="216" font-size="12" text-anchor="middle" transform="rotate(-90 15 216)">Cycles</text>
+<text x="288" y="408" font-size="12" text-anchor="middle">Number of Inst. (N)</text>
+<rect x="66.5" y="340.7" width="14.3" height="25.3" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="76.2" y="336.7" font-size="7.5" text-anchor="start" transform="rotate(-90 76.2 336.7)">306</text>
+<rect x="82.8" y="340.7" width="14.3" height="25.3" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="92.4" y="336.7" font-size="7.5" text-anchor="start" transform="rotate(-90 92.4 336.7)">306</text>
+<rect x="99.0" y="340.7" width="14.3" height="25.3" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="108.6" y="336.7" font-size="7.5" text-anchor="start" transform="rotate(-90 108.6 336.7)">306</text>
+<text x="90.9" y="382" font-size="11" text-anchor="middle">1</text>
+<rect x="132.3" y="326.7" width="14.3" height="39.3" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="141.9" y="322.7" font-size="7.5" text-anchor="start" transform="rotate(-90 141.9 322.7)">475</text>
+<rect x="148.5" y="326.8" width="14.3" height="39.2" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="158.1" y="322.8" font-size="7.5" text-anchor="start" transform="rotate(-90 158.1 322.8)">474</text>
+<rect x="164.7" y="326.7" width="14.3" height="39.3" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="174.3" y="322.7" font-size="7.5" text-anchor="start" transform="rotate(-90 174.3 322.7)">476</text>
+<text x="156.6" y="382" font-size="11" text-anchor="middle">2</text>
+<rect x="198.0" y="314.7" width="14.3" height="51.3" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="207.6" y="310.7" font-size="7.5" text-anchor="start" transform="rotate(-90 207.6 310.7)">621</text>
+<rect x="214.2" y="315.1" width="14.3" height="50.9" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="223.8" y="311.1" font-size="7.5" text-anchor="start" transform="rotate(-90 223.8 311.1)">616</text>
+<rect x="230.4" y="314.3" width="14.3" height="51.7" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="240.0" y="310.3" font-size="7.5" text-anchor="start" transform="rotate(-90 240.0 310.3)">625</text>
+<text x="222.3" y="382" font-size="11" text-anchor="middle">4</text>
+<rect x="263.7" y="308.5" width="14.3" height="57.5" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="273.3" y="304.5" font-size="7.5" text-anchor="start" transform="rotate(-90 273.3 304.5)">695</text>
+<rect x="279.9" y="308.5" width="14.3" height="57.5" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="289.5" y="304.5" font-size="7.5" text-anchor="start" transform="rotate(-90 289.5 304.5)">695</text>
+<rect x="296.1" y="308.1" width="14.3" height="57.9" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="305.7" y="304.1" font-size="7.5" text-anchor="start" transform="rotate(-90 305.7 304.1)">700</text>
+<text x="288.0" y="382" font-size="11" text-anchor="middle">8</text>
+<rect x="329.4" y="302.8" width="14.3" height="63.2" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="339.0" y="298.8" font-size="7.5" text-anchor="start" transform="rotate(-90 339.0 298.8)">765</text>
+<rect x="345.6" y="303.0" width="14.3" height="63.0" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="355.2" y="299.0" font-size="7.5" text-anchor="start" transform="rotate(-90 355.2 299.0)">762</text>
+<rect x="361.8" y="294.2" width="14.3" height="71.8" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="371.5" y="290.2" font-size="7.5" text-anchor="start" transform="rotate(-90 371.5 290.2)">869</text>
+<text x="353.7" y="382" font-size="11" text-anchor="middle">16</text>
+<rect x="395.1" y="294.0" width="14.3" height="72.0" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="404.7" y="290.0" font-size="7.5" text-anchor="start" transform="rotate(-90 404.7 290.0)">870</text>
+<rect x="411.3" y="294.1" width="14.3" height="71.9" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="421.0" y="290.1" font-size="7.5" text-anchor="start" transform="rotate(-90 421.0 290.1)">870</text>
+<rect x="427.5" y="234.4" width="14.3" height="131.6" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="437.2" y="230.4" font-size="7.5" text-anchor="start" transform="rotate(-90 437.2 230.4)">1591</text>
+<text x="419.4" y="382" font-size="11" text-anchor="middle">32</text>
+<rect x="460.8" y="276.2" width="14.3" height="89.8" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="470.5" y="272.2" font-size="7.5" text-anchor="start" transform="rotate(-90 470.5 272.2)">1085</text>
+<rect x="477.0" y="269.4" width="14.3" height="96.6" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="486.7" y="265.4" font-size="7.5" text-anchor="start" transform="rotate(-90 486.7 265.4)">1168</text>
+<rect x="493.2" y="120.1" width="14.3" height="245.9" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="502.9" y="116.1" font-size="7.5" text-anchor="start" transform="rotate(-90 502.9 116.1)">2973</text>
+<text x="485.1" y="382" font-size="11" text-anchor="middle">64</text>
+<line x1="594" y1="60" x2="594" y2="366" stroke="black" stroke-width="1.4"/>
+<line x1="594" y1="366" x2="1054" y2="366" stroke="black" stroke-width="1.4"/>
+<text x="551" y="216" font-size="12" text-anchor="middle" transform="rotate(-90 551 216)">Wall-time (ns)</text>
+<text x="824" y="408" font-size="12" text-anchor="middle">Number of Inst. (N)</text>
+<rect x="602.5" y="340.7" width="14.3" height="25.3" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="612.2" y="336.7" font-size="7.5" text-anchor="start" transform="rotate(-90 612.2 336.7)">95.0</text>
+<rect x="618.8" y="340.6" width="14.3" height="25.4" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="628.4" y="336.6" font-size="7.5" text-anchor="start" transform="rotate(-90 628.4 336.6)">95.2</text>
+<rect x="635.0" y="340.7" width="14.3" height="25.3" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="644.6" y="336.7" font-size="7.5" text-anchor="start" transform="rotate(-90 644.6 336.7)">95.2</text>
+<text x="626.9" y="382" font-size="11" text-anchor="middle">1</text>
+<rect x="668.3" y="326.7" width="14.3" height="39.3" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="677.9" y="322.7" font-size="7.5" text-anchor="start" transform="rotate(-90 677.9 322.7)">148</text>
+<rect x="684.5" y="326.7" width="14.3" height="39.3" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="694.1" y="322.7" font-size="7.5" text-anchor="start" transform="rotate(-90 694.1 322.7)">148</text>
+<rect x="700.7" y="326.6" width="14.3" height="39.4" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="710.3" y="322.6" font-size="7.5" text-anchor="start" transform="rotate(-90 710.3 322.6)">148</text>
+<text x="692.6" y="382" font-size="11" text-anchor="middle">2</text>
+<rect x="734.0" y="314.6" width="14.3" height="51.4" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="743.6" y="310.6" font-size="7.5" text-anchor="start" transform="rotate(-90 743.6 310.6)">193</text>
+<rect x="750.2" y="315.0" width="14.3" height="51.0" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="759.8" y="311.0" font-size="7.5" text-anchor="start" transform="rotate(-90 759.8 311.0)">191</text>
+<rect x="766.4" y="314.3" width="14.3" height="51.7" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="776.0" y="310.3" font-size="7.5" text-anchor="start" transform="rotate(-90 776.0 310.3)">194</text>
+<text x="758.3" y="382" font-size="11" text-anchor="middle">4</text>
+<rect x="799.7" y="308.4" width="14.3" height="57.6" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="809.3" y="304.4" font-size="7.5" text-anchor="start" transform="rotate(-90 809.3 304.4)">216</text>
+<rect x="815.9" y="308.5" width="14.3" height="57.5" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="825.5" y="304.5" font-size="7.5" text-anchor="start" transform="rotate(-90 825.5 304.5)">216</text>
+<rect x="832.1" y="308.0" width="14.3" height="58.0" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="841.7" y="304.0" font-size="7.5" text-anchor="start" transform="rotate(-90 841.7 304.0)">218</text>
+<text x="824.0" y="382" font-size="11" text-anchor="middle">8</text>
+<rect x="865.4" y="302.7" width="14.3" height="63.3" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="875.0" y="298.7" font-size="7.5" text-anchor="start" transform="rotate(-90 875.0 298.7)">238</text>
+<rect x="881.6" y="302.9" width="14.3" height="63.1" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="891.2" y="298.9" font-size="7.5" text-anchor="start" transform="rotate(-90 891.2 298.9)">237</text>
+<rect x="897.8" y="294.1" width="14.3" height="71.9" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="907.5" y="290.1" font-size="7.5" text-anchor="start" transform="rotate(-90 907.5 290.1)">270</text>
+<text x="889.7" y="382" font-size="11" text-anchor="middle">16</text>
+<rect x="931.1" y="294.0" width="14.3" height="72.0" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="940.7" y="290.0" font-size="7.5" text-anchor="start" transform="rotate(-90 940.7 290.0)">270</text>
+<rect x="947.3" y="294.0" width="14.3" height="72.0" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="957.0" y="290.0" font-size="7.5" text-anchor="start" transform="rotate(-90 957.0 290.0)">270</text>
+<rect x="963.5" y="234.4" width="14.3" height="131.6" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="973.2" y="230.4" font-size="7.5" text-anchor="start" transform="rotate(-90 973.2 230.4)">494</text>
+<text x="955.4" y="382" font-size="11" text-anchor="middle">32</text>
+<rect x="996.8" y="276.2" width="14.3" height="89.8" fill="#ffffff" stroke="black" stroke-width="0.7"/>
+<text x="1006.5" y="272.2" font-size="7.5" text-anchor="start" transform="rotate(-90 1006.5 272.2)">337</text>
+<rect x="1013.0" y="269.4" width="14.3" height="96.6" fill="#9e9e9e" stroke="black" stroke-width="0.7"/>
+<text x="1022.7" y="265.4" font-size="7.5" text-anchor="start" transform="rotate(-90 1022.7 265.4)">363</text>
+<rect x="1029.2" y="120.1" width="14.3" height="245.9" fill="#3f3f3f" stroke="black" stroke-width="0.7"/>
+<text x="1038.9" y="116.1" font-size="7.5" text-anchor="start" transform="rotate(-90 1038.9 116.1)">923</text>
+<text x="1021.1" y="382" font-size="11" text-anchor="middle">64</text>
+</svg>

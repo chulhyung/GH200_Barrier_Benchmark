@@ -124,6 +124,23 @@ static inline void bb_shuffle(size_t *a, size_t n, uint64_t seed) {
     }
 }
 
+/* Build a single random cycle of length n over the indices [0,n): chase[i] holds
+ * the successor index. Group 1 uses this as a CHEAP, L1-resident cross-iteration
+ * dependency carrier: `dep = chase[dep]` once per iteration forms a dependent load
+ * chain that SERIALIZES iterations (removes the cross-iteration store-MLP that made
+ * the no-dependency baseline ~8 cyc/iter look unrealistically low), while the N
+ * intra-iteration stores stay INDEPENDENT (their line index is hash(j ^ dep) with j
+ * varying per store) so a fence still has parallel stores to serialize. This is NOT
+ * a pointer chase of the store stream (which would serialize the intra-iteration
+ * stores too) — only the iteration-to-iteration link is dependent. */
+static inline void bb_build_index_chase(uint64_t *chase, uint64_t n, uint64_t seed) {
+    size_t *perm = (size_t *)malloc(n * sizeof(size_t));
+    for (uint64_t i = 0; i < n; i++) perm[i] = (size_t)i;
+    bb_shuffle(perm, n, seed);
+    for (uint64_t i = 0; i < n; i++) chase[perm[i]] = (uint64_t)perm[(i + 1) % n];
+    free(perm);
+}
+
 static inline bb_workset_t bb_workset_make(size_t working_set_bytes, bb_pattern_t pat,
                                            int n_streams, uint64_t seed) {
     bb_workset_t w; memset(&w, 0, sizeof(w));
@@ -266,11 +283,29 @@ static inline void bb_pmu_close(bb_pmu_t *p) {
 /* ===========================================================================
  * Gates (Layer A). See docs/measurement_and_gates.md.
  * ========================================================================= */
-typedef enum { BB_HIT = 0, BB_MISS = 1 } bb_condition_t;
+/* hit/miss = the two-point axis used by Group 2/3/4 (load side, contention).
+ * l1/l2/l3/dram = Group 1's cache-RESIDENCY axis (store side): the store stream's
+ * working set is sized to resolve at L1 / L2 / SLC / DRAM (2 KiB / 512 KiB / 8 MiB /
+ * 512 MiB, latency-validated by tools/cache_residency.c). l1 is resident (warmed,
+ * like hit); l2/l3 miss L1 but resolve in the named level; dram is the deep miss
+ * (like miss). Residency LEVEL is set by the working-set size, not by a counter —
+ * the core "miss" counters cannot separate the shared SLC from DRAM (METHODOLOGY
+ * §7.1) — so the gate only checks "did it miss L1?" (l2/l3/dram) or "is it resident?"
+ * (l1), plus the strong exposed-miss check at dram. */
+typedef enum { BB_HIT = 0, BB_MISS = 1, BB_L1 = 2, BB_L2 = 3, BB_L3 = 4, BB_DRAM = 5 } bb_condition_t;
 typedef enum { BB_LOAD = 0, BB_STORE = 1 } bb_acckind_t;
+/* a "resident" condition keeps its working set in-cache (warmed) -> l1_refill ~ 0 */
+static inline int bb_cond_resident(bb_condition_t c) { return c == BB_HIT || c == BB_L1; }
+/* a "deep" condition exposes full DRAM latency -> strong miss gate (ll + stall) */
+static inline int bb_cond_deep(bb_condition_t c) { return c == BB_MISS || c == BB_DRAM; }
+static inline const char *bb_condition_str(bb_condition_t c);   /* fwd (used in gate reasons) */
 
 typedef struct {
-    double miss_l1_min;     /* default 0.90 */
+    double miss_l1_min;     /* default 0.90 (deep miss / dram: nearly every access misses L1) */
+    double mid_l1_min;      /* default 0.50 (l2/l3 resident-miss: majority miss L1, but the
+                             * resident set legitimately keeps some lines in L1 — e.g. a 512 KiB
+                             * L2 set has ~12.5% L1-resident, so l1_refill/acc ~ 0.8, NOT >=0.90.
+                             * The LEVEL is set by WS size + per-store latency, not this counter.) */
     double miss_l2_min;     /* default 0.50 (unused; l2 is prefetch-coupled) */
     double miss_ll_min;     /* default 0.50 */
     double miss_stall_frac; /* default 0.10: stall_be_mem must be >=10% of cycles => latency EXPOSED.
@@ -282,7 +317,7 @@ typedef struct {
 } bb_thresholds_t;
 
 static inline bb_thresholds_t bb_default_thresholds(void) {
-    bb_thresholds_t t = {0.90, 0.50, 0.50, 0.10, 0.02, 0.999, 0};
+    bb_thresholds_t t = {0.90, 0.50, 0.50, 0.50, 0.10, 0.02, 0.999, 0};
     return t;
 }
 
@@ -318,26 +353,39 @@ static inline int bb_gate_eval(bb_condition_t cond, bb_acckind_t kind,
     double l1 = (double)c->l1d_refill / (double)n_access;
     double l2 = (double)c->l2d_refill / (double)n_access;
     double ll = (double)c->ll_miss_rd / (double)n_access;
-    if (cond == BB_MISS) {
-        /* l1d_refill (every demand access misses L1) + ll_miss_rd (it reaches the
-         * last level / DRAM) are stable demand-miss indicators. l2d_refill is NOT
-         * gated: it is polluted by HW prefetch into L2, which DROPS when a fence
-         * serializes the stream (less MLP -> less prefetch) — recorded only. */
-        (void)kind;
-        double stall_frac = c->cycles ? (double)c->stall_be_mem / (double)c->cycles : 0.0;
-        if (l1 < t->miss_l1_min) { snprintf(reason,128,"MISS fail: l1_refill/acc=%.3f<%.2f",l1,t->miss_l1_min); return 0; }
-        if (ll < t->miss_ll_min) { snprintf(reason,128,"MISS fail: ll_miss_rd/acc=%.3f<%.2f",ll,t->miss_ll_min); return 0; }
-        /* exposed-latency check: backend memory stall must be a real fraction of
-         * cycles. Prefetched (e.g. sequential) misses still refill L1 (l1=1.0) but
-         * stall is ~0.3% of cycles; genuine exposed misses are 60-94% at ALL N. */
-        if (stall_frac < t->miss_stall_frac) { snprintf(reason,128,"MISS fail: PREFETCHED stall=%.1f%%cyc<%.0f%%",100*stall_frac,100*t->miss_stall_frac); return 0; }
-        snprintf(reason,128,"MISS ok l1=%.2f ll=%.2f stall=%.0f%%cyc (l2=%.2f info)",l1,ll,100*stall_frac,l2);
-        return 1;
-    } else {
-        if (l1 > t->hit_l1_max) { snprintf(reason,128,"HIT fail: l1_refill/acc=%.4f>%.3f",l1,t->hit_l1_max); return 0; }
-        snprintf(reason,128,"HIT ok l1=%.4f",l1);
+    double stall_frac = c->cycles ? (double)c->stall_be_mem / (double)c->cycles : 0.0;
+    (void)kind;
+    if (bb_cond_resident(cond)) {
+        /* resident (hit / l1): the warmed working set stays in L1 -> almost no refills */
+        if (l1 > t->hit_l1_max) { snprintf(reason,128,"%s fail: l1_refill/acc=%.4f>%.3f",bb_condition_str(cond),l1,t->hit_l1_max); return 0; }
+        snprintf(reason,128,"%s ok (resident) l1=%.4f",bb_condition_str(cond),l1);
         return 1;
     }
+    /* missed L1 (miss / l2 / l3 / dram): the gate only confirms the stream is NOT
+     * L1-resident; it does NOT gate the LEVEL (the core "miss" counters cannot separate
+     * the on-mesh shared SLC from DRAM — METHODOLOGY §7.1 — so the level is set by the
+     * working-set size, latency-validated by tools/cache_residency.c). The l1_refill
+     * floor differs by depth: a DEEP miss (dram/miss) refills L1 on nearly every access
+     * (>=0.90); an L2/L3-resident stream legitimately keeps part of its set in L1
+     * (e.g. ~12.5% for a 512 KiB L2 set), so its l1_refill/acc is ~0.8 — gated only at
+     * mid_l1_min (>=0.50, well above the chase-only floor 1/N, so it still proves the
+     * STORES miss L1). l2d_refill is not gated (streaming stores bypass L2 allocate). */
+    double l1_floor = bb_cond_deep(cond) ? t->miss_l1_min : t->mid_l1_min;
+    if (l1 < l1_floor) { snprintf(reason,128,"%s fail: l1_refill/acc=%.3f<%.2f (did not miss L1)",bb_condition_str(cond),l1,l1_floor); return 0; }
+    if (bb_cond_deep(cond)) {
+        /* the DEEP miss (miss / dram) must additionally REACH DRAM and EXPOSE the
+         * latency: ll_miss_rd reaches the last level and backend-mem stall is a real
+         * fraction of cycles (rules out a prefetcher hiding the miss). l2/l3 skip
+         * this check by design — their ll/stall are low (SLC/L2 hit) yet they are
+         * genuine L1-misses at the named resident level. */
+        if (ll < t->miss_ll_min) { snprintf(reason,128,"%s fail: ll_miss_rd/acc=%.3f<%.2f",bb_condition_str(cond),ll,t->miss_ll_min); return 0; }
+        if (stall_frac < t->miss_stall_frac) { snprintf(reason,128,"%s fail: PREFETCHED stall=%.1f%%cyc<%.0f%%",bb_condition_str(cond),100*stall_frac,100*t->miss_stall_frac); return 0; }
+        snprintf(reason,128,"%s ok l1=%.2f ll=%.2f stall=%.0f%%cyc (l2=%.2f info)",bb_condition_str(cond),l1,ll,100*stall_frac,l2);
+        return 1;
+    }
+    /* l2 / l3 resident: missed L1, level established by WS+latency, not counters */
+    snprintf(reason,128,"%s ok (missed L1, level by WS) l1=%.2f ll=%.2f stall=%.0f%%cyc (l2=%.2f info)",bb_condition_str(cond),l1,ll,100*stall_frac,l2);
+    return 1;
 }
 
 /* ===========================================================================
@@ -393,13 +441,25 @@ static inline int bb_parse_pattern(const char *s, bb_pattern_t *out) {
 static inline int bb_parse_condition(const char *s, bb_condition_t *out) {
     if (!strcmp(s,"hit"))  { *out = BB_HIT;  return 0; }
     if (!strcmp(s,"miss")) { *out = BB_MISS; return 0; }
+    if (!strcmp(s,"l1"))   { *out = BB_L1;   return 0; }
+    if (!strcmp(s,"l2"))   { *out = BB_L2;   return 0; }
+    if (!strcmp(s,"l3"))   { *out = BB_L3;   return 0; }
+    if (!strcmp(s,"dram")) { *out = BB_DRAM; return 0; }
     return -1;
 }
 static inline const char *bb_pattern_str(bb_pattern_t p) {
     return p==BB_SEQ?"sequential":(p==BB_RANDOM?"random":"chase");
 }
 static inline const char *bb_condition_str(bb_condition_t c) {
-    return c==BB_HIT?"hit":"miss";
+    switch (c) {
+        case BB_HIT:  return "hit";
+        case BB_MISS: return "miss";
+        case BB_L1:   return "l1";
+        case BB_L2:   return "l2";
+        case BB_L3:   return "l3";
+        case BB_DRAM: return "dram";
+    }
+    return "miss";
 }
 
 /* minimal parser: supports "--key value" and "--key=value" */
@@ -431,9 +491,16 @@ static inline void bb_parse_args(int argc, char **argv, bb_args_t *a) {
         else if (!strcmp(key,"seed"))            a->seed = strtoull(val,NULL,0);
         else { fprintf(stderr,"[bb] unknown --%s\n", key); exit(2); }
     }
-    /* resolve default working set by condition */
-    if (a->working_set == 0)
-        a->working_set = (a->condition == BB_HIT) ? BB_KB(2) : BB_MB(512);
+    /* resolve default working set by condition (run.sh normally passes --working-set
+     * explicitly; these are the latency-validated residency sizes — METHODOLOGY §7.1) */
+    if (a->working_set == 0) {
+        switch (a->condition) {
+            case BB_HIT: case BB_L1: a->working_set = BB_KB(2);   break;
+            case BB_L2:              a->working_set = BB_KB(512); break;
+            case BB_L3:              a->working_set = BB_MB(8);   break;
+            default:                 a->working_set = BB_MB(512); break; /* miss / dram */
+        }
+    }
 }
 
 /* ===========================================================================

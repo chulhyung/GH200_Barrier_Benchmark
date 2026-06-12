@@ -15,6 +15,8 @@ OUT="$HERE/out"; mkdir -p "$OUT"; CSV="$OUT/contention.csv"; LOG="$OUT/run.log";
 gcc -O2 -march=native -Wall -Wextra -pthread -I"$REPO/lib" -o "$BIN" "$HERE/bench.c" -lm 2>>"$LOG" || { echo BUILD_FAIL; exit 1; }
 echo "build sha256: $(sha256sum "$BIN"|cut -d' ' -f1) gcc $(gcc -dumpversion)" | tee -a "$LOG"
 objdump -d "$BIN" | grep -wE "stlr|ldar|ldapr" | sed -E 's/^[[:space:]]+//' | sort -u > "$OUT/objdump.snippet" || true
+objdump -d "$BIN" > "$OUT/objdump.full" 2>/dev/null || true
+echo "objdump nop check: $(grep -cwiE 'nop' "$OUT/objdump.full" 2>/dev/null || echo 0) nop(s) in binary (see objdump.full)" | tee -a "$LOG"
 echo "name,kind,threads,repeats,base_cyc_op,treat_cyc_op,incr_cyc_op,base_ns_op,treat_ns_op,incr_ns_op,base_l1_op,treat_l1_op,treat_remote_op,treat_stall_frac,mux,pin_ok,overlap_ok,base_cyc_op_min,base_cyc_op_max,base_cyc_op_std,base_ns_op_min,base_ns_op_max,base_ns_op_std" > "$CSV"
 for V in ldar ldapr; do for T in $TS; do
     numactl --membind=0 "$BIN" --variant "$V" --threads "$T" --iters "$ITERS" --repeats "$REPEATS" --core0 "$CORE0" --csv "$CSV" 2>>"$LOG"

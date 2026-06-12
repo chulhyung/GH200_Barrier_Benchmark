@@ -36,6 +36,15 @@ static inline void dmb_ld(void)    { __asm__ __volatile__("dmb ld"    ::: "memor
 static inline void store_plain_64(volatile uint64_t *p, uint64_t v) {
     __asm__ __volatile__("str %1, [%0]" :: "r"(p), "r"(v) : "memory");
 }
+
+/* A single architectural NOP with a "memory" clobber so the compiler emits it and
+ * cannot move/elide it. Used by Group 1 to pad the no-ordering baseline so it has
+ * the SAME instruction-slot count as the dmb/stlr treatment — this cancels the
+ * front-end decode cost of the extra ordering instruction, leaving Δ = the fence's
+ * own drain (Pranith's NOP-padding request). */
+static inline void nop_pad(void) {
+    __asm__ __volatile__("nop" ::: "memory");
+}
 static inline uint64_t load_plain_64(volatile uint64_t *p) {
     uint64_t v;
     __asm__ __volatile__("ldr %0, [%1]" : "=r"(v) : "r"(p) : "memory");

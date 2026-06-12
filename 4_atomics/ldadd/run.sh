@@ -31,6 +31,8 @@ gcc -O2 -march=native -Wall -Wextra -pthread -I"$REPO/lib" -o "$BIN" "$HERE/benc
     || { echo "BUILD FAIL (see $LOG)"; exit 1; }
 echo "build sha256: $(sha256sum "$BIN" | cut -d' ' -f1)  gcc $(gcc -dumpversion)" | tee -a "$LOG"
 objdump -d "$BIN" | grep -wE "ldadd|ldadda|ldaddl|ldaddal|swp|swpa|swpl|swpal|cas|casa|casl|casal|ldxr|stxr|ldaxr|stlxr" | sed -E 's/^[[:space:]]+//' | sort -u > "$OBJ" || true
+objdump -d "$BIN" > "$OUT/objdump.full" 2>/dev/null || true
+echo "objdump nop check: $(grep -cwiE 'nop' "$OUT/objdump.full" 2>/dev/null || echo 0) nop(s) in binary (see objdump.full)" | tee -a "$LOG"
 echo "objdump dmb opcodes -> $OBJ ($(wc -l < "$OBJ") lines)" | tee -a "$LOG"
 
 : > "$RAW"                      # bench writes its own header on first append
